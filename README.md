@@ -1,3 +1,5 @@
-# Sistema de Coleta de Informações sobre o COVID-19
+# Sistema de Monitoramento da COVID-19
 
-Ferramenta de coleta de dados. Este repositório contém somente as partes em que eu (@valeriojr) trabalhei neste projeto, portanto não é possível utilizar o sistema.
+## Ferramenta para coleta de dados durante a pandemia de COVID-19 sem fins lucrativos. 
+
+Esse repositório contém uma versão mais atualizada do repositório https://www.github.com/valeriojr/smc19 (apenas as partes que eu trabalhei)
