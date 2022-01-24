@@ -1,0 +1,18 @@
+<div id="{% block modal_id %}{% endblock %}" class="modal printable" role="dialog">
+    <div class="modal-dialog {% block modal_size %}{% endblock %}">
+        <div class="modal-content">
+            <div class="modal-header">
+                {% block modal_header %}{% endblock %}
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+            </div>
+
+            <div class="modal-body">
+                {% block modal_body %}{% endblock %}
+            </div>
+
+            <div class="modal-footer">
+                {% block modal_footer %}{% endblock %}
+            </div>
+        </div>
+    </div>
+</div>

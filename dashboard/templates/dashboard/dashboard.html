@@ -1,0 +1,435 @@
+{% extends 'base.html' %}
+
+{% load static %}
+
+{% block content %}
+    <style nonce="{{ request.csp_nonce }}">
+        .height-300 {
+            height: 300px;
+        }
+    </style>
+
+    <!-- Total cards -->
+    <div class="row p-3">
+        <!-- Total confirmed -->
+        <div class="col h-100 d-flex">
+            <div class="card bg-danger text-white my-auto w-100 p-3">
+                <div class="">Casos confirmados</div>
+                <span class=" display-1 font-weight-bold">{{ confirmed__sum|default:"0" }}</span>
+            </div>
+        </div>
+        <!-- Total recovered -->
+        <div class="col h-100 d-flex">
+            <div class="card bg-success text-white my-auto w-100 p-3">
+                <div class="">Recuperados</div>
+                <span class=" display-1 font-weight-bold">{{ recovered__sum|default:"0" }}</span>
+            </div>
+        </div>
+        <!-- Suspects -->
+        <div class="col h-100 d-flex">
+            <div class="card bg-warning text-white my-auto w-100 p-3">
+                <div class="">Suspeitos (ativos)</div>
+                <span class=" display-1 font-weight-bold">{{ suspect__sum|default:"0" }}</span>
+            </div>
+        </div>
+        <!-- Monitored -->
+        <div class="col h-100 d-flex">
+            <div class="card bg-info text-white my-auto w-100 p-3">
+                <div class="">Monitorados</div>
+                <span class=" display-1 font-weight-bold">{{ monitored__sum|default:"0" }}</span>
+            </div>
+        </div>
+        <!-- Deaths -->
+        <div class="col h-100 d-flex">
+            <div class="card bg-dark text-white my-auto w-100 p-3">
+                <div class="">Óbitos</div>
+                <span class=" display-1 font-weight-bold ">{{ dead__sum|default:"0" }}</span>
+            </div>
+        </div>
+    </div>
+    <!-- Last 4 weeks / confirmed by gender -->
+    <div class="row height-300 m-3">
+        <div class="col-8 card h-100">
+            <div class="row h-100">
+                <div class="col-6 h-100">
+                    <canvas id="myChart" class=" p-3"></canvas>
+                </div>
+                <div class="col-6 px-3">
+                    <table class="table">
+                        <thead>
+                        <tr>
+                            <th>Semana</th>
+                            <th>Confirmados</th>
+                            <th>Recuperados</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr>
+                            <td>{{ last_4_weeks_confirmed.week.0 }}</td>
+                            <td>{{ last_4_weeks_confirmed.confirmed__sum.0 }}</td>
+                            <td>{{ last_4_weeks_recovered.recovered__sum.0 }}</td>
+                        </tr>
+                        <tr>
+                            <td>{{ last_4_weeks_confirmed.week.1 }}</td>
+                            <td>{{ last_4_weeks_confirmed.confirmed__sum.1 }}</td>
+                            <td>{{ last_4_weeks_recovered.recovered__sum.1 }}</td>
+                        </tr>
+                        <tr>
+                            <td>{{ last_4_weeks_confirmed.week.2 }}</td>
+                            <td>{{ last_4_weeks_confirmed.confirmed__sum.2 }}</td>
+                            <td>{{ last_4_weeks_recovered.recovered__sum.2 }}</td>
+                        </tr>
+                        <tr>
+                            <td>{{ last_4_weeks_confirmed.week.3 }}</td>
+                            <td>{{ last_4_weeks_confirmed.confirmed__sum.3 }}</td>
+                            <td>{{ last_4_weeks_recovered.recovered__sum.3 }}</td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        <div class="col-4 card h-100">
+            <div class="h-100">
+                <canvas id="confirmed_by_gender" class="p-3 h-100"></canvas>
+            </div>
+        </div>
+    </div>
+    <!-- Occupation -->
+    <div class="row height-300 p-3">
+        <!-- Ocupação de leitos -->
+        <div class="col-7 h-100">
+            <canvas id="occupation-chart" class="card p-3 h-100"></canvas>
+        </div>
+        <!-- Tabela com previsão de ocupação -->
+        <div id="forecast" class="text-center col-5 ">
+            <div class="card">
+                <p>Previsão para os próximos 4 dias</p>
+                <div class="row-col">
+                    <table class="table">
+                        <thead>
+                        <tr>
+                            <th></th>
+                            {% for dia in dados_previsao.dias %}
+                                <th>{{ dia|date:"d/M" }}</th>
+                            {% endfor %}
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr>
+                            <td>RET</td>
+                            {% for previsao in dados_previsao.previsoes %}
+                                <td>{{ previsao|floatformat }}</td>
+                            {% endfor %}
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!--Filter form-->
+    <div class="container">
+        <h3>Filtrar atendimentos por período</h3>
+        {% csrf_token %}
+        <div class="mb-2">
+            <form>
+                <div class="row">
+                    {% for field in date_form_to_mvg %}
+                    <div class="col-xs-auto col-md-auto mb-1">
+                        <label for="{{ field.auto_id }}">{{ field.label }}</label>
+                        {{ field }}
+                        <small id="help_{{ field.auto_id }}" class="form-text text-muted">{{ field.help_text }}</small>
+                    </div>
+                    {% endfor %}
+                    <button class="btn btn-outline-primary my-2 my-sm-0" type="submit">Filtrar</button>
+                    </div>
+            </form>
+        </div>
+    </div>
+    <!-- Daily monitorings -->
+    <div class="row-col border m-3 p-3">
+        <canvas id="monitoring-per-day-chart" height="100px"></canvas>
+    </div>
+    <!-- Daily tests -->
+    <div class="row-col border m-3 p-3">
+        <canvas id="tests-per-day-chart" height="100px"></canvas>
+    </div>
+    <!-- Confirmed daily -->
+    <div class="row-col border m-3 p-3">
+        <canvas id="confirmed-per-day-chart" height="100px"></canvas>
+    </div>
+
+    <!-- Data -->
+    {{ occupation|json_script:'occupation_data' }}
+    {{ last_4_weeks_confirmed|json_script:'last_4_weeks_confirmed' }}
+    {{ last_4_weeks_recovered|json_script:'last_4_weeks_recovered' }}
+    {{ genderData|json_script:'gender_data' }}
+    {{ monitoring_daily|json_script:'monitoring_daily' }}
+    {{ confirmed_daily|json_script:'confirmed_daily' }}
+    {{ tests_daily|json_script:'tests_daily' }}
+    {{ hospitalization|json_script:'hospitalization' }}
+
+    <!-- Last 4 weeks -->
+    <script nonce="{{ request.csp_nonce }}">
+        $(document).ready(function () {
+
+            var last_4_weeks_confirmed = JSON.parse($("#last_4_weeks_confirmed").html());
+            var last_4_weeks_recovered = JSON.parse($("#last_4_weeks_recovered").html());
+            var ctx = document.getElementById('myChart').getContext('2d');
+
+            var datasets = [
+                {
+                    label: 'Confirmados',
+                    data: last_4_weeks_confirmed.confirmed__sum,
+                    backgroundColor: 'rgba(255, 0, 0, .5)',
+                    barWidth: 0.75
+                },
+                {
+                    label: 'Recuperados',
+                    data: last_4_weeks_recovered.recovered__sum,
+                    backgroundColor: 'rgba(0, 255, 0, .5)',
+                    barWidth: 0.75
+                }
+            ];
+
+            var myChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: last_4_weeks_recovered.week,
+                    datasets: datasets,
+                },
+                options: {
+                    scales: {
+                        yAxes: [{
+                            ticks: {
+                                beginAtZero: true
+                            }
+                        }]
+                    },
+                    legend: {
+                        display: true,
+                        labels: {
+                            fontColors: ["rgb(255, 0, 0)", "rgb(0, 255, 0)", "rgb(0, 0, 255)", "rgb(255, 255, 0)"]
+                        }
+                    },
+                    title: {
+                        display: true,
+                        text: 'Casos de COVID-19 (últimas 4 semanas)'
+                    },
+                    responsive: true,
+                    maintainAspectRatio: false,
+                },
+            });
+        });
+    </script>
+    <!-- Hospitalizations -->
+    <script type="text/javascript" nonce="{{ request.csp_nonce }}">
+        $(document).ready(function () {
+            var hospitalizations = JSON.parse($("#hospitalization").html());
+            hospitalizations.entry = hospitalizations.entry.map(function (d) {
+                return d.split("-").reverse().join("/");
+            });
+
+            new Chart(document.getElementById("occupation-chart"), {
+                type: 'line',
+                data: {
+                    labels: hospitalizations.entry,
+                    datasets: [
+                        {
+                            data: hospitalizations.icu,
+                            label: "Leitos de UTI",
+                            borderColor: "red",
+                            fill: false
+                        },
+                        {
+                            data: hospitalizations.common,
+                            label: "Leitos comuns",
+                            borderColor: "steelblue",
+                            fill: false
+                        },
+                    ]
+                },
+                options: {
+                    title: {
+                        display: true,
+                        text: 'Internações diárias'
+                    },
+                    xAxes: [{
+                        type: 'date',
+                        date: {
+                            displayFormats: {
+                                day: 'day'
+                            }
+                        }
+                    }],
+                    responsive: true,
+                    maintainAspectRatio: false,
+                }
+            });
+        });
+    </script>
+    <!-- Confimerd/Gender -->
+    <script type="text/javascript" nonce="{{ request.csp_nonce }}">
+        var genderData = JSON.parse($("#gender_data").html());
+        $(document).ready(function () {
+            new Chart(document.getElementById("confirmed_by_gender"), {
+                type: 'pie',
+                data: {
+                    labels: ["Não declarado", "Feminino", "Masculino"],
+                    datasets: [{
+                        label: "Casos confirmados por sexo",
+                        backgroundColor: ["#3e95cd", "#8e5ea2", "#3cba9f"],
+                        data: genderData.confirmed__sum,
+                    }]
+                },
+                options: {
+                    title: {
+                        display: true,
+                        text: 'Casos confirmados por sexo'
+                    }
+                }
+            });
+        });
+    </script>
+    <!-- Daily monitoring -->
+    <script type="text/javascript" nonce="{{ request.csp_nonce }}">
+        var monitoring_daily = JSON.parse($("#monitoring_daily").html());
+        monitoring_daily.attendance_date = monitoring_daily.attendance_date.map(function (d) {
+            return d.split("-").reverse().join("/");
+        });
+
+        new Chart(document.getElementById("monitoring-per-day-chart"), {
+            type: 'line',
+            data: {
+                labels: monitoring_daily.attendance_date,
+                datasets: [
+                    {
+                        data: monitoring_daily.moving_avg,
+                        label: "Média móvel (7 dias)",
+                        borderColor: "red",
+                        fill: false
+                    },
+                    {
+                        data: monitoring_daily.count,
+                        label: "Atendimentos",
+                        borderColor: "#3e95cd",
+                        fill: false
+                    }
+                ]
+            },
+            options: {
+                title: {
+                    display: true,
+                    text: 'Número de atendimentos por dia'
+                },
+                xAxes: [{
+                    type: 'time',
+                    time: {
+                        displayFormats: {
+                            quarter: 'MMM YYYY'
+                        }
+                    },
+                    ticks: {
+                        autoSkip: true,
+                        max: 5
+                    }
+                }]
+            }
+        });
+    </script>
+    <!-- Confirmed daily -->
+    <script type="text/javascript" nonce="{{ request.csp_nonce }}">
+        var confirmed_daily = JSON.parse($("#confirmed_daily").html());
+        confirmed_daily.confirmed_date = confirmed_daily.confirmed_date.map(function (d) {
+            return d.split("-").reverse().join("/");
+        });
+
+        new Chart(document.getElementById("confirmed-per-day-chart"), {
+            type: 'line',
+            data: {
+                labels: confirmed_daily.confirmed_date,
+                datasets: [
+                    {
+                        data: confirmed_daily.moving_avg,
+                        label: "Média móvel (7 dias)",
+                        borderColor: "red",
+                        fill: false
+                    },
+                    {
+                        data: confirmed_daily.count,
+                        label: "Confirmados",
+                        borderColor: "#3e95cd",
+                        fill: false
+                    }
+                    
+                ]
+            },
+            options: {
+                title: {
+                    display: true,
+                    text: 'Número de confirmados por dia'
+                },
+                xAxes: [{
+                    type: 'time',
+                    time: {
+                        displayFormats: {
+                            'day': 'MM/DD/YYYY'
+                        }
+                    },
+                    ticks: {
+                        autoSkip: true,
+                        max: 5
+                    }
+                }]
+            }
+        });
+    </script>
+    <!-- Daily tests -->
+    <script type="text/javascript" nonce="{{ request.csp_nonce }}">
+        var tests_daily = JSON.parse($("#tests_daily").html());
+        tests_daily.attendance_date = tests_daily.attendance_date.map(function (d) {
+            return d.split("-").reverse().join("/");
+        });
+
+        new Chart(document.getElementById("tests-per-day-chart"), {
+            type: 'line',
+            data: {
+                labels: tests_daily.attendance_date,
+                datasets: [
+                    {
+                        data: tests_daily.moving_avg,
+                        label: "Média móvel (7 dias)",
+                        borderColor: "red",
+                        fill: false
+                    },
+                    {
+                        data: tests_daily.count,
+                        label: "Testes",
+                        borderColor: "#3e95cd",
+                        fill: false
+                    }
+                    
+                ]
+            },
+            options: {
+                title: {
+                    display: true,
+                    text: 'Número de testes por dia'
+                },
+                xAxes: [{
+                    type: 'time',
+                    time: {
+                        displayFormats: {
+                            quarter: 'MMM YYYY'
+                        }
+                    },
+                    ticks: {
+                        autoSkip: true,
+                        max: 5
+                    }
+                }]
+            }
+        });
+    </script>
+{% endblock %}

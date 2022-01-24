@@ -1,0 +1,45 @@
+version: '3'
+services:
+  mariadb:
+    image: mariadb:focal
+    environment:
+      MARIADB_RANDOM_ROOT_PASSWORD: yes
+      MARIADB_DATABASE: "smc19_db"
+      MARIADB_USER: "smc19_user"
+      MARIADB_PASSWORD: "123456"
+    container_name: smc19-mariadb
+    networks: 
+      - smc19-network
+
+  nginx:
+    image: nginx:stable
+    container_name: smc19-nginx
+    volumes:
+      - $PWD/deploy/nginx.conf:/etc/nginx/conf.d/default.conf:ro
+      - $PWD/deploy/server.key:/etc/ssl/server.key:ro
+      - $PWD/deploy/server.crt:/etc/ssl/server.crt:ro
+      - $PWD/uwsgi_params:/etc/nginx/uwsgi_params:ro
+      - $PWD/static:/var/www/smc19/static:ro
+      - $PWD/media:/var/www/smc19/media:ro
+    ports:
+      - "443:443"
+      - "80:80"
+    networks:
+      - smc19-network
+    depends_on:
+      - smc19
+
+  smc19:
+    build:
+      dockerfile: ./Dockerfile
+      context: .
+    image: smc19
+    container_name: smc19
+    networks: 
+      - smc19-network
+    depends_on:
+      - mariadb
+
+networks: 
+  smc19-network:
+    driver: bridge

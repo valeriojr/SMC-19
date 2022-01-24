@@ -1,0 +1,531 @@
+{% extends 'base.html' %}
+
+{% load crispy_forms_filters %}
+
+{% load static %}
+
+{% block content %}
+    <div class="row">
+        <div class="col-9">
+            <h4>Perfil do paciente</h4>
+        </div>
+        <div class="col-3 btn-group my-auto">
+            <a href="{% url 'monitoring:update-death-date' profile.id %}" class="btn btn-dark mr-2">Registrar óbito</a>
+
+            <!-- Modal com o formulário de atualização do perfil -->
+            {% include 'monitoring/profile_update_modal.html' %}
+
+            <button type="button" class="btn btn-primary mr-2" data-toggle="modal" data-target="#update-profile">Editar
+            </button>
+
+            {% ifequal request.user.group profile.group %}
+                {% include 'monitoring/profile_delete_modal.html' %}
+
+                <button type="button" class="btn btn-danger" data-toggle="modal" data-target="#delete-profile">Remover
+                </button>
+            {% endifequal %}
+        </div>
+    </div>
+
+    <!-- Dados pessoais -->
+    <h4>Dados pessoais</h4>
+    <div class="row-col">
+        <small class="text-muted">Nome completo</small>
+        <div class="border rounded p-1">{{ profile.full_name|default:'-' }}</div>
+    </div>
+    <div class="row">
+        <div class="col-6 pr-1">
+            <small class="text-muted">RG</small>
+            <div class="border rounded p-1">{{ profile.id_document|default:'-' }}</div>
+        </div>
+        <div class="col-6 pl-1">
+            <small class="text-muted">CPF</small>
+            <div class="border rounded p-1">{{ profile.cpf|default:'-' }}</div>
+        </div>
+    </div>
+    <div class="row-col">
+        <small class="text-muted">Nome da mãe</small>
+        <div class="border rounded p-1">{{ profile.mother_name|default:'-' }}</div>
+    </div>
+    <div class="row-col">
+        <small class="text-muted">Cadastro Nacional de Saúde</small>
+        <div class="border rounded p-1">{{ profile.cns|default:'-' }}</div>
+    </div>
+    <div class="row">
+        <div class="col-6 pr-1">
+            <small class="text-muted">Data de nascimento</small>
+            <div class="border rounded p-1">{{ profile.birth_date|date:'d/m/Y'|default:'-' }}</div>
+        </div>
+        <div class="col-6 pl-1">
+            <small class="text-muted">Idade</small>
+            <div class="border rounded p-1">{{ profile.age|default:'-' }} anos</div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-4 pr-1">
+            <small class="text-muted">Sexo biológico</small>
+            <div class="border rounded p-1">{{ profile.get_gender_display|default:'-' }}</div>
+        </div>
+        <div class="col-4 pr-1 pl-1">
+            <small class="text-muted">Altura</small>
+            <div class="border rounded p-1">{{ profile.height }} m</div>
+        </div>
+        <div class="col-4 pl-1">
+            <small class="text-muted">Peso</small>
+            <div class="border rounded p-1">{{ profile.weight }} kg</div>
+        </div>
+    </div>
+    <div class="row-col">
+        <small class="text-muted">Número de telefone</small>
+        <div class="border rounded p-1">{{ profile.phone_number|default:'-' }}</div>
+    </div>
+    <div class="row">
+        <div class="col-6 pr-1">
+            <small class="text-muted">Vacinado contra gripe em 2020</small>
+            <div class="border rounded p-1">{{ profile.vaccinated|yesno|title|default:'-' }}</div>
+        </div>
+        <div class="col-6 pl-1">
+            <small class="text-muted">Fumante</small>
+            <div class="border rounded p-1">{{ profile.smoker|yesno|title|default:'-' }}</div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-6 pr-1">
+            <small class="text-muted">Precisou de oxigênio recentemente</small>
+            <div class="border rounded p-1">{{ profile.oxygen|yesno|title }}</div>
+        </div>
+    </div>
+
+    <hr>
+
+    <h4>Comorbidades</h4>
+    <div class="row">
+        {% for comorbidity in comorbidities %}
+            <div class="col-6 col-md-6 col-lg-4">
+                <small class="text-muted">{{ comorbidity.label }}</small>
+                <div class="border rounded p-1">{{ comorbidity.set|yesno|title }}</div>
+            </div>
+        {% endfor %}
+    </div>
+
+    <hr>
+
+    <h4>Endereço</h4>
+    <!-- Modal com o formulário de criação do endereço -->
+    {% include 'monitoring/address_create_modal.html' %}
+
+    <!-- Modal com o formulário de atualização do endereço -->
+    {% include 'monitoring/address_update_modal.html' %}
+
+    <!-- Modal com o formulário de remoção do endereço -->
+    {% include 'monitoring/address_delete_modal.html' %}
+
+    <script nonce="{{ request.csp_nonce }}">
+        $.each($("[id='id_city']"), function (indexCity, cityElement) {
+            $.each($("[id='id_neighbourhood']"), function (indexNeighbourhood, neighbourhoodElement) {
+                $.each($("[id='id_input_text_neighbourhood']"), function (indexInputTextNeighbourhood, inputTextNeighbourhoodElement) {
+                    const citySelect = $(cityElement);
+                    const neighbourhoodSelect = $(neighbourhoodElement);
+                    const neighbourhoodInputText = $(inputTextNeighbourhoodElement);
+
+                    neighbourhoodInputText.on("change", function () {
+                        const inputText = neighbourhoodInputText.val();
+                        neighbourhoodSelect.append(`<option value="${inputText}">${inputText}</option>`)
+                        neighbourhoodSelect.val(inputText).attr("selected", "selected");
+                    });
+
+                    neighbourhoodSelect.on("change", function () {
+                        neighbourhoodInputText.val(neighbourhoodSelect.val());
+                    });
+
+                    // initial load of neighbourhoods
+                    handleNeighbourhoodField();
+
+                    citySelect.on("change", handleNeighbourhoodField);
+
+                    function handleNeighbourhoodField() {
+                        $.getJSON("{% url 'monitoring:neighbourhood-list' %}?city=" + citySelect.val(), function (response) {
+                            if (response.length > 0) {
+                                neighbourhoodInputText.parent().parent().hide();
+                                neighbourhoodSelect.parent().parent().show();
+
+                                neighbourhoodSelect.empty();
+
+                                $.each(response, function (i, neighbourhood) {
+                                    neighbourhoodSelect.append(`<option value="${neighbourhood}">${neighbourhood}</option>`);
+                                });
+                                // set inital value for input text from select input
+                                neighbourhoodInputText.val(neighbourhoodSelect.val());
+                            } else {
+                                neighbourhoodSelect.parent().parent().hide();
+                                neighbourhoodInputText.parent().parent().show();
+
+                                neighbourhoodInputText.val("");
+                            }
+                        });
+                    }
+                });
+            });
+        });
+    </script>
+
+    <!-- Lista de endereços -->
+    <ul class="list-group">
+        {% for address in profile.address_set.all %}
+            <li class="list-group-item">
+                {{ address }}
+                <button id="address-edit-button-{{ forloop.counter }}" class="btn btn-secondary" data-toggle="modal"
+                        data-target="#update-address">
+                    Editar
+                </button>
+                {% if profile.address_set.count > 1 %}
+                    <button id="address-delete-button-{{ forloop.counter }}" class="btn btn-danger" data-toggle="modal"
+                            data-target="#delete-address">
+                        Remover
+                    </button>
+                {% endif %}
+            </li>
+            <script nonce="{{ request.csp_nonce }}">
+                $("#address-edit-button-{{ forloop.counter }}").on("click", function () {
+                    $('#update-address-form').attr('action', '{% url 'monitoring:address-update' profile.id address.id %}');
+                    //$('#update-address-form #id_city').val('{{ address.city }}');
+                    $('#update-address-form #id_neighbourhood').val('{{ address.neighbourhood }}');
+                    $('#update-address-form #id_type').val('{{ address.type }}');
+                    $('#update-address-form #id_postal_code').val('{{ address.postal_code }}');
+                    $('#update-address-form #id_street_name').val('{{ address.street_name }}');
+                    $('#update-address-form #id_number').val('{{ address.number }}');
+                    $('#update-address-form #id_complement').val('{{ address.complement }}');
+                    $('#update-address-form #id_people').val('{{ address.people }}');
+                });
+                $("#address-delete-button-{{ forloop.counter }}").on("click", function () {
+                    $('#delete-address-form').attr('action', '{% url 'monitoring:address-delete' profile.id address.id %}');
+                });
+            </script>
+        {% empty %}
+            <p class="text-muted">Nenhum endereço cadastrado</p>
+        {% endfor %}
+        <button class="btn btn-primary" data-toggle="modal" data-target="#create-address">Adicionar endereço</button>
+    </ul>
+
+    <hr>
+
+    <h4>Histórico de viagens</h4>
+    <!-- Modal com o formulário de criação de viagens -->
+    {% include 'monitoring/trip_create_modal.html' %}
+
+    <!-- Modal com o formulário de atualização de viagens -->
+    {% include 'monitoring/trip_update_modal.html' %}
+
+    <!-- Modal com o formulário de remoção de viagens -->
+    {% include 'monitoring/trip_delete_modal.html' %}
+
+    <!-- Lista de viagens -->
+    <ul class="list-group mb-3">
+        {% for trip in profile.trip_set.all %}
+            <li class="list-group-item">
+                {{ trip }}
+                <button id="trip-edit-button-{{ forloop.counter }}" class="btn btn-secondary" data-toggle="modal"
+                        data-target="#update-trip">
+                    Editar
+                </button>
+                <button id="trip-delete-button-{{ forloop.counter }}" class="btn btn-danger" data-toggle="modal"
+                        data-target="#delete-trip">
+                    Remover
+                </button>
+            </li>
+            <script nonce="{{ request.csp_nonce }}">
+                $("#trip-edit-button-{{ forloop.counter }}").on("click", function () {
+                    $('#update-trip-form').attr('action', '{% url 'monitoring:trip-update' profile.id trip.id %}');
+                    $('#update-trip-form #id_departure_date').val('{{ trip.departure_date|date:'Y-m-d' }}');
+                    $('#update-trip-form #id_return_date').val('{{ trip.return_date|date:'Y-m-d' }}');
+                    $('#update-trip-form #id_country').val('{{ trip.country }}');
+                });
+                $("#trip-delete-button-{{ forloop.counter }}").on("click", function () {
+                    $('#delete-trip-form').attr('action', '{% url 'monitoring:trip-delete' profile.id trip.id %}');
+                });
+            </script>
+        {% empty %}
+            <p class="text-muted">Nenhuma viagem recente</p>
+        {% endfor %}
+        <button class="btn btn-primary" data-toggle="modal" data-target="#create-trip">Adicionar viagem</button>
+    </ul>
+
+    <hr>
+
+    <h4>Histórico de internações</h4>
+    <!-- Modal com o formulário de criação de internações -->
+    {% include 'monitoring/hospitalization_create_modal.html' %}
+
+    <!-- Modal com o formulário de atualização de internações -->
+    {% include 'monitoring/hospitalization_update_modal.html' %}
+
+    <!-- Modal com o formulário de remoção de internações -->
+    {% include 'monitoring/hospitalization_delete_modal.html' %}
+
+    <!-- Lista de internações -->
+    <ul class="list-group mb-3">
+        {% for hospitalization in profile.hospitalization_set.all %}
+            <li class="list-group-item">
+                {{ hospitalization|safe }}
+                <button id="hospitalization-edit-button-{{ forloop.counter }}" class="btn btn-secondary" data-toggle="modal"
+                        data-target="#update-hospitalization">
+                    Editar
+                </button>
+                <button id="hospitalization-delete-button-{{ forloop.counter }}" class="btn btn-danger" data-toggle="modal"
+                        data-target="#delete-hospitalization">
+                    Remover
+                </button>
+            </li>
+            <script nonce="{{ request.csp_nonce }}">
+                $("#hospitalization-edit-button-{{ forloop.counter }}").on("click", function () {
+                    $('#update-hospitalization-form').attr('action', '{% url 'monitoring:hospitalization-update' profile.id hospitalization.id %}');
+                    $('#update-hospitalization-form #id_health_center_0').append($('<option>', {
+                        value: '{{ hospitalization.health_center.id }}',
+                        text: '{{ hospitalization.health_center }}'
+                    }));
+                    $('#update-hospitalization-form #id_bed_type').val('{{ hospitalization.bed_type }}');
+                    $('#update-hospitalization-form #id_entry').val('{{ hospitalization.entry|date:'Y-m-d' }}');
+                    $('#update-hospitalization-form #id_departure').val('{{ hospitalization.departure|date:'Y-m-d' }}');
+                });
+                $("#hospitalization-delete-button-{{ forloop.counter }}").on("click", function () {
+                    $('#delete-hospitalization-form').attr('action', '{% url 'monitoring:hospitalization-delete' profile.id hospitalization.id %}');
+                });
+            </script>
+        {% empty %}
+            <p class="text-muted">Nenhuma internação recente</p>
+        {% endfor %}
+        <button class="btn btn-primary" data-toggle="modal" data-target="#create-hospitalization">Adicionar Internação</button>
+    </ul>
+
+    <hr>
+
+    <hr>
+
+    <h4>Contatos Recentes</h4>
+    <!-- Modal com o formulário de criação de contatos -->
+    {% include 'monitoring/contact_create_modal.html' %}
+
+    <!-- Modal com o formulário de remoção de viagens -->
+    {% include 'monitoring/contact_delete_modal.html' %}
+
+    <!-- Lista de contatos recentes -->
+    <ul class="list-group mb-3">
+        {% for contact in profile.contact_set.all %}
+            <li class="list-group-item">
+                {{ contact }}
+                <span id="contact-name-{{ forloop.counter }}" hidden>{{ contact.name }}</span>
+                <span id="contact-phone_number-{{ forloop.counter }}" hidden>{{ contact.phone_number }}</span>
+                <span id="contact-contact_date-{{ forloop.counter }}" hidden>{{ contact.contact_date }}</span>
+                <button id="contact-repeat-button-{{ forloop.counter }}" class="btn btn-primary" data-toggle="modal" data-target="#create-contact">Repetir contato</button>
+                <button id="contact-delete-button-{{ forloop.counter }}" class="btn btn-danger" data-toggle="modal"
+                        data-target="#delete-contact">
+                    Remover
+                </button>
+            </li>
+            <script nonce="{{ request.csp_nonce }}">
+                $("#contact-delete-button-{{ forloop.counter }}").on("click", function () {
+                    $('#delete-contact-form').attr('action', '{% url 'monitoring:contact-delete' profile.id contact.id %}');
+                });
+            </script>
+            <script nonce="{{ request.csp_nonce }}">
+                $("#contact-repeat-button-{{ forloop.counter }}").on("click", function () {
+                    $("#create-contact-form :input[name='name']")[0].value = $("#contact-name-{{ forloop.counter }}").text();
+                    var pn = $("#contact-phone_number-{{ forloop.counter }}").text()
+                    var new_pn;
+                    if (pn.length == 11) {
+                        new_pn = '('+pn.substring(0,2)+') '+pn.substring(2, 7)+'-'+pn.substring(7, 11);
+                    } else {
+                        new_pn = '('+pn.substring(0,2)+') '+pn.substring(2, 6)+'-'+pn.substring(6, 10);
+                    }
+                    $("#create-contact-form :input[name='phone_number']")[0].value = new_pn;
+                });
+            </script>
+        {% empty %}
+            <p class="text-muted">Nenhum contato recente</p>
+        {% endfor %}
+        <button id='create-contact-button' class="btn btn-primary" data-toggle="modal" data-target="#create-contact">Adicionar contato</button>
+        <script nonce="{{ request.csp_nonce }}">
+            $("#create-contact-button").on("click", function () {
+                $("#create-contact-form :input[name='name']")[0].value = '';
+                $("#create-contact-form :input[name='phone_number']")[0].value = '';
+                $("#create-contact-form :input[name='contact_date']")[0].value = '';
+            });
+        </script>
+    </ul>
+
+    <hr>
+
+    <h4>Histórico de vacinação</h4>
+    <!-- Modal com o formulário de criação de vacinação -->
+    {% include 'monitoring/vaccination_create_modal.html' %}
+
+    <!-- Modal com o formulário de atualização de vacinação -->
+    {% include 'monitoring/vaccination_update_modal.html' %}
+
+    <!-- Modal com o formulário de remoção de vacinação -->
+    {% include 'monitoring/vaccination_delete_modal.html' %}
+    <!-- Lista de vacinações recentes -->
+    <ul class="list-group mb-3">
+        {% for vaccination in profile.vaccination_set.all %}
+            <li class="list-group-item">
+                {{ vaccination }}
+                <span id="vaccination-name-{{ forloop.counter }}" hidden>{{ vaccination.vaccine }}</span>
+                <span id="vaccination-dose-{{ forloop.counter }}" hidden>{{ vaccination.dose }}</span>
+                <span id="vaccination-date-{{ forloop.counter }}" hidden>{{ vaccination.date }}</span>
+                <button id="vaccination-edit-button-{{ forloop.counter }}" class="btn btn-secondary" data-toggle="modal"
+                        data-target="#update-vaccination">
+                    Editar
+                </button>
+                <button id="vaccination-delete-button-{{ forloop.counter }}" class="btn btn-danger" data-toggle="modal"
+                        data-target="#delete-vaccination">
+                    Remover
+                </button>
+            </li>
+            <script nonce="{{ request.csp_nonce }}">
+                $("#vaccination-edit-button-{{ forloop.counter }}").on("click", function () {
+                    $('#update-vaccination-form').attr('action', '{% url 'monitoring:vaccination-update' profile.id vaccination.id %}');
+                    $('#update-vaccination-form #vaccine').append($('<option>', {
+                        value: '{{ vaccination.vaccine }}',
+                        text: '{{ vaccination.get_vaccine_display }}'
+                    }));
+                    $('#update-vaccination-form #dose').append($('<option>', {
+                        value: '{{ vaccination.dose }}',
+                        text: '{{ vaccination.get_dose_display }}'
+                    }));
+                    $('#update-vaccination-form #date').val('{{ vaccination.date|date:'Y-m-d' }}');
+                });
+                $("#vaccination-delete-button-{{ forloop.counter }}").on("click", function () {
+                    $('#delete-vaccination-form').attr('action', '{% url 'monitoring:vaccination-delete' profile.id vaccination.id %}');
+                });
+            </script>
+        {% empty %}
+            <p class="text-muted">Nenhuma vacinação recente</p>
+        {% endfor %}
+        <button id='create-vaccination-button' class="btn btn-primary" data-toggle="modal" data-target="#create-vaccination">Adicionar vacinação</button>
+        <script nonce="{{ request.csp_nonce }}">
+            $("#create-vaccination-button").on("click", function () {
+                $("#create-vaccination-form :input[name='vaccine']")[0].value = '';
+                $("#create-vaccination-form :input[name='dose']")[0].value = '';
+                $("#create-vaccination-form :input[name='date']")[0].value = '';
+            });
+        </script>
+    </ul>
+
+    <hr>
+
+    <!-- > Familiares</ -->
+    <div>
+        <h4> Familiares do paciente</h4>
+        <div id="profile-search-bar">
+            {% include 'monitoring/profile_search_bar.html' %}
+        </div>
+        <form method="post" action="{% url 'monitoring:make-familiar' profile.id %}">
+            {% csrf_token %}
+            <label for="profile-select">Paciente</label>
+            <select id="profile-select" name="other"></select>
+            <input type="submit" class="btn btn-primary" value="Adicionar familiar">
+        </form>
+        <ul class="list-group">
+            {% for familiar in familiars %}
+                <li class="list-group-item">
+                    <div class="row">
+                        <div class="col">
+                            <a href="{% url 'monitoring:profile-detail' familiar.id %}">{{ familiar }}</a>
+                        </div>
+                        <div class="col">
+                            <form method="post" action="{% url 'monitoring:unmake-familiar' profile.id familiar.id %}">
+                                {% csrf_token %}
+                                <input type="submit" class="btn btn-primary" value="Remover familiar">
+                            </form>
+                        </div>
+                    </div>
+                </li>
+            {% empty %}
+                <p class="text-muted">O paciente ainda não possui familiares cadastrados.</p>
+            {% endfor %}
+        </ul>
+
+    </div>
+    <!-- Lista de atendimentos -->
+
+    <hr>
+
+    <h4>Atendimentos realizados</h4>
+    <div class="list-group">
+        {% if profile.death_date %}
+            <li class="list-group-item">
+                <div class="row-col">
+                    <span>{{ profile.death_date|date:'d/m/Y' }} <span class="badge badge-dark">Óbito</span></span>
+                </div>
+            </li>
+        {% endif %}
+        {% for monitoring in profile.monitoring_set.all %}
+            <li class="list-group-item">
+                <div class="row">
+                    <div class="col">
+                        {% if monitoring.attendance_date == None %}
+                            <a href="{% url 'monitoring:monitoring-detail' monitoring.id %}">{{ monitoring.created }}</a>
+                        {% else %}
+                            <a href="{% url 'monitoring:monitoring-detail' monitoring.id %}">{{ monitoring.attendance_date }}</a>
+                        {% endif %}
+                        {% ifequal monitoring.result 'PO' %}
+                            <span class="badge badge-danger">Confirmado</span>
+                        {% else %}
+                            {% if monitoring.score > 10 %}
+                                {% ifequal monitoring.result 'SR' %}
+                                    <span class="badge badge-warning">Suspeito</span>
+                                {% endifequal %}
+                            {% endif %}
+                        {% endifequal %}
+                    </div>
+                </div>
+            </li>
+        {% empty %}
+            <p class="text-muted">Nenhum atendimento encontrado</p>
+        {% endfor %}
+    </div>
+
+    <p></p>
+    <script src="{% static 'scripts/calc_cep.js' %}" nonce="{{ request.csp_nonce }}"></script>
+    <script nonce="{{ request.csp_nonce }}">
+        $.each($('[id="id_state"]'), function (i, stateElement) {
+            const stateSelect = $(stateElement);
+            $(stateSelect).on("change", function () {
+                $.getJSON("{% url 'monitoring:county-list' %}?uf=" + stateSelect.val(), function (response) {
+                    $.each($("[id='id_county']"), function (i, countyElement) {
+                        const countySelect = $(countyElement);
+                        countySelect.empty();
+                        $.each(response, function (i, county) {
+                            countySelect.append(`<option value="${county}">${county}</option>`);
+                        })
+                    });
+
+                    $.each($("[id='id_city']"), function (i, countyElement) {
+                        const countySelect = $(countyElement);
+                        countySelect.empty();
+                        $.each(response, function (i, county) {
+                            countySelect.append(`<option value="${county}">${county}</option>`);
+                        })
+                    });
+                });
+            });
+        });
+    </script>
+    <script nonce="{{ request.csp_nonce }}">
+        $("#profile-search-bar form").on("submit", function (e) {
+            e.preventDefault();
+            $.getJSON("{% url 'monitoring:profile-search' 'lalilulelo' %}".replace("lalilulelo", $("#search-query").val()), function (response) {
+                const profileSelect = $("#profile-select");
+                profileSelect.empty();
+                $.each(response, function (i, profile) {
+                    if (profile.id !== {{ profile.id }}) {
+                        profileSelect.append(`<option value='${profile.id}'>${profile.cpf} ${profile.full_name}</option>`);
+                    }
+                });
+            });
+        });
+
+    </script>
+
+    <script src="{% static 'scripts/profile_form.js' %}" nonce="{{ request.csp_nonce }}"></script>
+{% endblock %}

@@ -1,0 +1,101 @@
+{% extends 'base.html' %}
+
+{% load static %}
+
+{% load crispy_forms_filters %}
+
+{% block content %}
+    <h4>Novo atendimento</h4>
+    <h6>Identificação</h6>
+    <!-- >Essa parte ficou aqui por que quando apertava o botão ele enviava o form<!-->
+    <label for="id_profile_0" class=" requiredField">
+        Paciente <span class="asteriskField">*</span>
+    </label>
+    <div class="form-inline mb-2">
+        <input id="search-profile" class="form-control col-6 mr-2 " name="term"
+               placeholder="Nome, CPF, RG...">
+        <div class="col-4">
+            <button id="search_profile_button" class="btn btn-secondary">Pesquisar</button>
+        </div>
+    </div>
+    <form id="monitoring-create-form" method="post"
+          action="{% url 'monitoring:monitoring-create' %}">
+        {% csrf_token %}
+
+        <div id="div_id_profile" class="form-group">
+            <!-- aqui vem os profiles encontrados><!-->
+            <select name="profile" class="select form-control" required id="id_profile">
+                <option value="" selected>Nenhum perfil selecionado.</option>
+            </select>
+        </div>
+        {{ monitoring_create_form.community_health_agent_name|as_crispy_field }}
+        {{ monitoring_create_form.professional|as_crispy_field }}
+        {{ monitoring_create_form.attendance_date|as_crispy_field }}
+        <hr>
+        <h6>Sinais vitais</h6>
+        {{ monitoring_create_form.oxygen_saturation|as_crispy_field }}
+        {{ monitoring_create_form.temperature|as_crispy_field }}
+        {{ monitoring_create_form.pulse|as_crispy_field }}
+        {{ monitoring_create_form.blood_pressure|as_crispy_field }}
+        <hr>
+        <h6>Testes</h6>
+        {{ monitoring_create_form.tests|as_crispy_field }}
+        {{ monitoring_create_form.collection_date|as_crispy_field }}
+        {{ monitoring_create_form.result_date|as_crispy_field }}
+        {{ monitoring_create_form.test_location|as_crispy_field }}
+        {{ monitoring_create_form.result|as_crispy_field }}
+        <hr>
+        <h6>Sintomas</h6>
+        {{ monitoring_create_form.virus_exposure|as_crispy_field }}
+        {{ symptom_formset.management_form }}
+        {% for form in symptom_formset %}
+            <h6>{{ form.label.value }}</h6>
+            <div class="form-row">
+                {{ form.symptom }}
+                {{ form.onset|as_crispy_field }}
+            </div>
+        {% endfor %}
+        <hr>
+        <h6>Conclusão</h6>
+        {{ monitoring_create_form.hypothesis|as_crispy_field }}
+        {{ monitoring_create_form.note|as_crispy_field }}
+        {{ monitoring_create_form.medical_referral|as_crispy_field }}
+        {{ monitoring_create_form.medical_referral_status|as_crispy_field }}
+        {{ monitoring_create_form.medical_referral_duration|as_crispy_field }}
+        {{ monitoring_create_form.prescription|as_crispy_field }}
+        {{ monitoring_create_form.other_prescription|as_crispy_field }}
+
+        {% comment %}
+        <hr>
+        <h6>Internamento (Opcional, pode ser adicionado na página de detalhes do paciente)</h6>
+        <label for="id_health_center_0" class=" requiredField">
+            Unidade de Saúde para Internação <span class="asteriskField">*</span>
+        </label>
+        <div class="form-inline mb-2">
+            <input id="search-health_center" class="form-control col-6 mr-2 " name="healthcenter_term"
+                    placeholder="Nome, código CNES, código IBGE, CEP...">
+            <div class="col-4">
+                <a id="search_health_center_button" class="btn btn-secondary text-white">Pesquisar</a>
+            </div>
+        </div>
+        <div id="div_id_health_center" class="form-group">
+            <!-- aqui vem os health_centers encontrados><!-->
+            <select name="health_center" class="select form-control" id="id_health_center">
+                <option value="" selected="">---------</option>
+            </select>
+        </div>
+        {{ hospitalization_create_form.bed_type|as_crispy_field }}
+        {{ hospitalization_create_form.entry|as_crispy_field }}
+        {{ hospitalization_create_form.departure|as_crispy_field }}
+        {% endcomment %}
+
+        <a class="btn btn-light" href="{% url 'monitoring:index' %}">Cancelar</a>
+        <input type="submit" class="btn btn-primary" value="Criar">
+    </form>
+
+    <script src="{% static 'scripts/monitoring_create.js' %}" nonce="{{ request.csp_nonce }}"></script>
+    {% comment %}
+    <script src="{% static 'scripts/hospitalization_create.js' %}" nonce="{{ request.csp_nonce }}"></script>
+    {% endcomment %}
+{% endblock %}
+

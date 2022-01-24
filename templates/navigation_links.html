@@ -1,0 +1,58 @@
+{% block navigation %}
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNavAltMarkup"
+            aria-controls="navbarNavAltMarkup" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
+        <div class="navbar-nav">
+            <a class="nav-item nav-link" href="{% url 'monitoring:index' %}">Atendimento <span
+                    class="sr-only">(current)</span></a>
+            {% if user.user_profile == 'SS' %}
+                <a class="nav-item nav-link" href="{% url 'map:map_index' %}">Mapa</a>
+            {% endif %}
+            {% if user.user_profile == 'AD' %}
+                <a class="nav-item nav-link" href="{% url 'prediction:current_status' %}">Previsão de Leitos</a>
+            {% endif %}
+            <!-- <a class="nav-item nav-link" href="{% url 'evolution:graph_evolution' %}">Gráfico de Evolução</a>-->
+            {% if user.user_profile == 'AD' or user.user_profile == 'SS' %}
+                <a class="nav-item nav-link" href="{% url 'monitoring:request' %}">Pedidos</a>
+            {% endif %}
+            {% if user.user_profile == 'SS' %}
+                <a class="nav-item nav-link" href="{% url 'dashboard:dashboard' %}">Dashboard</a>
+            {% endif %}
+            {% if user.user_profile == 'AD' or user.user_profile == 'SS' %}
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button"
+                       data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        Usuários
+                    </a>
+                    <div class="dropdown-menu" aria-labelledby="navbarDropdown">
+                        <a class="dropdown-item" href="{% url 'accounts:sign-up' %}">Criar Usuário</a>
+                        <a class="dropdown-item" href="{% url 'accounts:list-group-users' %}?active_page=1&inactive_page=1">Gerenciar Usuários</a>
+                    </div>
+                </li>
+            {% endif %}
+            {% if user.user_profile == 'SS' %}
+                <a class="nav-item nav-link" href="{% url 'prediction:health-center-list' %}">Unidades de saúde</a>
+            {% endif %}
+            {% if user.user_profile == 'SS' %}
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button"
+                       data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        Relatório
+                    </a>
+                    <div class="dropdown-menu" aria-labelledby="navbarDropdown">
+                        <a class="dropdown-item"
+                           href="{% url 'report:status-report' %}?report_type=profile">Pacientes</a>
+                        <a class="dropdown-item" href="{% url 'report:status-report' %}?report_type=monitoring">Atendimentos</a>
+                        <a class="dropdown-item"
+                           href="{% url 'report:status-report' %}?report_type=address">Endereços</a>
+                    </div>
+                </li>
+            {% endif %}
+            <a class="nav-item nav-link" href="{% url 'accounts:change-password' %}">Alterar senha</a>
+            <a class="nav-item btn btn-secondary" href="{% url 'logout' %}">Sair</a>
+
+        </div>
+    </div>
+{% endblock %}

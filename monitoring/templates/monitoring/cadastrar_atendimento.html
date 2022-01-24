@@ -1,0 +1,26 @@
+{% extends 'base.html' %}
+
+{% load static %}
+{% load crispy_forms_filters %}
+
+{% block content %}
+    <form id="sign-up-form" method="post">
+        {% csrf_token %}
+        {{ form.profile|as_crispy_field }}
+        <hr>
+        <h6>Sintomas</h6>
+        {{ symptom_formset.management_form }}
+        {% for form in symptom_formset %}
+            <h6>{{ form.label.value }}</h6>
+            <div class="form-row">
+                {{ form.symptom }}
+                {{ form.onset|as_crispy_field }}
+            </div>
+        {% endfor %}
+        <hr>
+
+        <div class="form-row">
+            <div class="form-group col"><input type="submit" class="btn btn-primary align-right" value="Salvar"></div>
+        </div>
+    </form>
+{% endblock %}

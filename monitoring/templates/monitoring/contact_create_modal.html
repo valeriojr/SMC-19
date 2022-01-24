@@ -1,0 +1,31 @@
+{% extends 'bootstrap_modal.html' %}
+
+{% load crispy_forms_filters %}
+
+{% block modal_id %}create-contact{% endblock %}
+
+{% block modal_header %}
+    <h4 class="modal-title">Novo contato</h4>
+{% endblock %}
+
+{% block modal_body %}
+    <form id="create-contact-form" class="form-group" method="post"
+          action="{% url 'monitoring:contact-create' profile.id %}">{% csrf_token %}
+        {{ contact_form|crispy }}
+    </form>
+    <script nonce="{{ request.csp_nonce }}">
+        $("#create-contact-form :input[name='phone_number']").on('input', function () { 
+            var num = $(this).val().replace(/\D/g,'');
+            if (num.length == 11) {
+                $(this).val('(' + num.substring(0,2) + ')' + ' '+num.substring(2,7) + '-' + num.substring(7,11));
+            } else {
+                $(this).val('(' + num.substring(0,2) + ')' + ' '+num.substring(2,6) + '-' + num.substring(6,10));
+            }
+        });
+    </script>
+{% endblock %}
+
+{% block modal_footer %}
+    <button id="id_cancel_cotnact_create_modal" class="btn btn-light" data-dismiss="modal">Cancelar</button>
+    <input type="submit" form="create-contact-form" class="btn btn-primary" value="Criar">
+{% endblock %}

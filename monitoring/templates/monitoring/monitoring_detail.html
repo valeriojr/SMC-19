@@ -1,0 +1,143 @@
+{% extends 'base.html' %}
+
+{% load crispy_forms_filters %}
+
+
+{% block content %}
+    <div class="row">
+        <div class="col-9">
+            <h4>Atendimento <span class="text-muted">nº{{ monitoring.id }}</span></h4>
+            {% if monitoring.attendance_date == None %}
+                <p>Atendimento realizado em {{ monitoring.created|date:'d/m/Y' }}</p>
+            {% else %}
+                <p>Atendimento realizado em {{ monitoring.attendance_date|date:'d/m/Y' }}</p>
+            {% endif %}
+            <p>Criado em {{ monitoring.created|date:'d/m/Y' }}</p>
+        </div>
+        <div class="col-3 btn-group my-auto">
+        {% ifequal request.user.group monitoring.health_center.group %}
+            <div id="update-monitoring" class="modal" role="dialog">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h4 class="modal-title">Editar atendimento</h4>
+                            <button type="button" class="close" data-dismiss="modal">&times;</button>
+                        </div>
+
+                        <div class="modal-body">
+                            <form id="update-monitoring-form" method="post"
+                                  action="{% url 'monitoring:monitoring-update' monitoring.id %}">
+                                {% csrf_token %}
+                                {{ monitoring_update_form|crispy }}
+                                <hr>
+                                <h6>Sintomas</h6>
+                                {{ symptom_formset.management_form }}
+                                {% for form in symptom_formset %}
+                                    <h6>{{ form.label.value }}</h6>
+                                    <div class="row-col">
+                                        {{ form.symptom }}
+                                        {{ form.onset|as_crispy_field }}
+                                    </div>
+                                {% endfor %}
+                            </form>
+                        </div>
+
+                        <div class="modal-footer">
+                            <button class="btn btn-light" data-dismiss="modal">Cancelar</button>
+                            <input type="submit" form="update-monitoring-form" class="btn btn-primary" value="Salvar">
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <button type="button" class="btn btn-primary mr-2" data-toggle="modal" data-target="#update-monitoring">
+                Editar
+            </button>
+                {% include 'monitoring/monitoring_delete_modal.html' %}
+                <button type="button" class="btn btn-danger" data-toggle="modal" data-target="#delete-monitoring">
+                    Remover
+                </button>
+            {% endifequal %}
+        </div>
+    </div>
+
+
+
+    <div class="row-col">
+        <small class="text-muted">Paciente</small>
+        <div class="border rounded p-1">
+            <a href="{% url 'monitoring:profile-detail' monitoring.profile.id %}">{{ monitoring.profile|title }}</a>
+        </div>
+    </div>
+
+    <div class="row-col">
+        <small class="text-muted">Nome do profissional</small>
+        <div class="border rounded p-1">{{ monitoring.professional|default:'-' }}</div>
+    </div>
+
+    <div class="row-col">
+        <small class="text-muted">Agente de saúde comunitário</small>
+        <div class="border rounded p-1">{{ monitoring.community_health_agent_name|default:'-' }}</div>
+    </div>
+
+    <div class="row-col">
+        <small class="text-muted">Unidade de saúde</small>
+        <div class="border rounded p-1">{{ monitoring.health_center.center_name|default:'-' }}</div>
+    </div>
+
+    <div class="row-col">
+        <div class="row">
+            <div class="col-6 col-md-6 col-lg-4">
+                <small class="text-muted">Caso suspeito?</small>
+                <div class="border rounded p-1">{% if monitoring.score > 5 %}Sim{% else %}Não{% endif %}</div>
+            </div>
+
+            <div class="col-6 col-md-6 col-lg-4">
+                <small class="text-muted">Testado?</small>
+                <div class="border rounded p-1">{{ monitoring.get_tests_display|title|default:'Não' }}</div>
+            </div>
+
+            <div class="col-6 col-md-6 col-lg-4">
+                <small class="text-muted">Resultado do exame</small>
+                <div class="border rounded p-1">{{ monitoring.get_result_display|title }}</div>
+            </div>
+
+            <div class="col-6 col-md-6 col-lg-4">
+                <small class="text-muted">Pontuação</small>
+                <div class="border rounded p-1">{{ monitoring.score }}</div>
+            </div>
+        </div>
+    </div>
+
+    <hr>
+
+    <h4>Exposições ao vírus</h4>
+    <div class="row">
+        {% for exposure in exposures %}
+            <div class="col-6 col-md-6 col-lg-4">
+                <small class="text-muted">{{ exposure.label }}</small>
+                <div class="border rounded p-1">{{ exposure.set|yesno|title }}</div>
+            </div>
+        {% endfor %}
+    </div>
+
+    <div class="row">
+        <div class="col-12">
+            <small class="text-muted">Hipótese diagnóstica</small>
+            <div class="border rounded p-1">{{ monitoring.hypothesis|default:"-" }} </div>
+            <small class="text-muted">Observação</small>
+            <div class="border rounded p-1">{{ monitoring.note|default:"-" }} </div>
+        </div>
+    </div>
+
+    <hr>
+
+    <h4>Sintomas reportados</h4>
+    <ul class="list-group">
+        {% for symptom in monitoring.symptom_set.all %}
+            <li class="list-group-item">{{ symptom.get_symptom_display }} desde {{ symptom.onset|date:'d/m/Y' }}</li>
+        {% empty %}
+            <p class="text-muted">Nenhum sintoma reportado</p>
+        {% endfor %}
+    </ul>
+
+{% endblock %}

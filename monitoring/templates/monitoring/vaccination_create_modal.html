@@ -1,0 +1,21 @@
+{% extends 'bootstrap_modal.html' %}
+
+{% load crispy_forms_filters %}
+
+{% block modal_id %}create-vaccination{% endblock %}
+
+{% block modal_header %}
+    <h4 class="modal-title">Nova vacinação</h4>
+{% endblock %}
+
+{% block modal_body %}
+    <form id="create-vaccination-form" class="form-group" method="post"
+          action="{% url 'monitoring:vaccination-create' profile.id %}">{% csrf_token %}
+        {{ vaccination_form|crispy }}
+    </form>
+{% endblock %}
+
+{% block modal_footer %}
+    <button id="id_cancel_cotnact_create_modal" class="btn btn-light" data-dismiss="modal">Cancelar</button>
+    <input type="submit" form="create-vaccination-form" class="btn btn-primary" value="Criar">
+{% endblock %}

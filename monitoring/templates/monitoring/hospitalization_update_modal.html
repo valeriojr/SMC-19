@@ -1,0 +1,76 @@
+{% extends 'bootstrap_modal.html' %}
+
+{% load static %}
+
+{% load crispy_forms_filters %}
+
+{% block modal_id %}update-hospitalization{% endblock %}
+
+{% block modal_header %}
+    <h4 class="modal-title">Editar internação</h4>
+{% endblock %}
+
+{% block modal_body %}
+    <form id="update-hospitalization-form" method="post" action="">{% csrf_token %}
+        <label for="id_health_center_0" class=" requiredField">
+            Unidade de Saúde para Internação <span class="asteriskField">*</span>
+        </label>
+        <div class="form-inline mb-2">
+            <input id="search-health_center_0" class="form-control col-6 mr-2 " name="healthcenter_term"
+                    placeholder="Nome, código CNES, código IBGE, CEP...">
+            <div class="col-4">
+                <a id="search_health_center_button_0" class="btn btn-secondary text-white">Pesquisar</a>
+            </div>
+        </div>
+        <div id="div_id_health_center" class="form-group">
+            <!-- aqui vem os health_centers encontrados><!-->
+            <select name="health_center" class="select form-control" id="id_health_center_0">
+            </select>
+        </div>
+        {{ hospitalization_form.profile|as_crispy_field }}
+        {{ hospitalization_form.bed_type|as_crispy_field }}
+        {{ hospitalization_form.entry|as_crispy_field }}
+        {{ hospitalization_form.departure|as_crispy_field }}
+    </form>
+    <script nonce="{{ request.csp_nonce }}">
+        var select_health_centers_0 = $("#id_health_center_0");//aqui onde ele vai mostrar os health_centers encontrados
+        var health_center_button_0 = $("#search_health_center_button_0");//aqui o botão onde clicka pra buscar
+        var health_center_search_input_0 = $("#search-health_center_0");//aqui o valor informado pra busca
+
+        health_center_button_0.on('click', () => {
+            var health_center_term = health_center_search_input_0.val();
+            $.get("/unidades/" + health_center_term + "/buscar", (health_centers, status) => {
+
+                select_health_centers_0.html("");
+
+                if (health_centers.length === 0) {
+                    //não achou health_centers
+                    //Aqui é uns html pra deixar no padrão do crispy form...
+                    var option = $("<option selected></option>");
+                    option.val("");
+                    option.text("Nenhuma unidade de saúde encontrada encontrado.");
+
+                    select_health_centers_0.append(option);
+                } else {
+                    health_centers.forEach((health_center) => {//achou health_centers
+                        //Aqui é uns html pra deixar no padrão do crispy form...
+                        var option = $("<option></option>");
+                        option.text(
+                            health_center.center_name + " - " + health_center.street_name + ", " +
+                            (health_center.number || "S/N") + ' - ' + health_center.neighbourhood + ", " +
+                            health_center.city + ", " + health_center.postal_code
+                        );
+                        option.val(health_center.id);
+                        select_health_centers_0.append(option);
+                    });
+                }
+            })
+        });
+    </script>
+
+{% endblock %}
+
+{% block modal_footer %}
+    <button class="btn btn-light" data-dismiss="modal">Cancelar</button>
+    <input type="submit" form="update-hospitalization-form" class="btn btn-primary" value="Editar">
+{% endblock %}

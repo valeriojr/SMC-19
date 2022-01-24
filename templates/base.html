@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Sistema de monitoramento do COVID-19</title>
+    <!-- jQuery 3.4.1 -->
+    <script src="/static/scripts/jquery-3.4.1.min.js"
+            integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo=" crossorigin="anonymous"
+            nonce="{{ request.csp_nonce }}"></script>
+    <!-- Popper 1.12.9 -->
+    <script src="/static/scripts/popper.min.js"
+            integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q"
+            crossorigin="anonymous" nonce="{{ request.csp_nonce }}"></script>
+    <!-- Bootstrap 4.3.1 -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
+          integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous"
+          nonce="{{ request.csp_nonce }}">
+    <script src="/static/scripts/bootstrap.min.js"
+            integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM"
+            crossorigin="anonymous" nonce="{{ request.csp_nonce }}"></script>
+    <!-- Boostrap 4 Switch Buttons -->
+    <link href="https://cdn.jsdelivr.net/gh/gitbrent/bootstrap4-toggle@3.6.1/css/bootstrap4-toggle.min.css"
+          integrity="sha384-yakM86Cz9KJ6CeFVbopALOEQGGvyBFdmA4oHMiYuHcd9L59pLkCEFSlr6M9m434E" crossorigin="anonymous"
+          nonce="{{ request.csp_nonce }}"
+          rel="stylesheet">
+    <script src="/static/scripts/bootstrap4-toggle.min.js"
+            integrity="sha384-Q9RsZ4GMzjlu4FFkJw4No9Hvvm958HqHmXI9nqo5Np2dA/uOVBvKVxAvlBQrDhk4" crossorigin="anonymous"
+            nonce="{{ request.csp_nonce }}">
+    </script>
+    <!-- d3 4.13.0 -->
+    <script src="/static/scripts/d3.min.js"
+            integrity="sha384-1EOYqz4UgZkewWm70NbT1JBUXSQpOIS2AaJy6/evZH+lXOrt9ITSJbFctNeyBoIJ"
+            crossorigin="anonymous"
+            nonce="{{ request.csp_nonce }}">
+    </script>
+    <script src="/static/scripts/d3-array.v1.min.js"
+            integrity="sha384-eNoN1QUquT7+e3vJmaXeE4NReeo65Lso043hmS4Btr3vnaCjL8YORqqdXrnOY/zM" crossorigin="anonymous"
+            nonce="{{ request.csp_nonce }}">
+    </script>
+    <script src="/static/scripts/d3-geo.v1.min.js"
+            integrity="sha384-/aG09ng3OhXKpOsB99A/FUDvds8yvUFyFaVT3fvnO4WnMOlHIfup2tbCRvEke12h" crossorigin="anonymous"
+            nonce="{{ request.csp_nonce }}">
+    </script>
+    <script src="/static/scripts/d3-geo-projection.v2.min.js"
+            integrity="sha384-6P9VzJGJGXSvUVfZ52fqZHAv7NHH2XuzUNb9q1qUQHrUeaHROhULGwdOP8n4MLiW" crossorigin="anonymous"
+            nonce="{{ request.csp_nonce }}">
+    </script>
+    <script src="/static/scripts/d3-color.v1.min.js"
+            integrity="sha384-MYtiRG/2ZZXAxl7x73JOT0eJDr2z/zdvcya22Ya/Qffy0FTitey1yVAd4QmjRkhr" crossorigin="anonymous"
+            nonce="{{ request.csp_nonce }}">
+    </script>
+    <script src="/static/scripts/d3-interpolate.v1.min.js"
+            integrity="sha384-8svIvEmul71kOrYiWxgtthhVqB/SHRftITS+iaiT65ZHVa3qoIGSFcoAJkyasjmP" crossorigin="anonymous"
+            nonce="{{ request.csp_nonce }}">
+    </script>
+    <script src="/static/scripts/d3-scale-chromatic.v1.min.js"
+            integrity="sha384-hX5odjoulJel81+3dsnorXlZ7kA46f8qrV+2sBCcEAXaCyEAiRusFRjaefWw2NPp" crossorigin="anonymous"
+            nonce="{{ request.csp_nonce }}">
+    </script>
+<!--    <link href="https://cdn.jsdelivr.net/npm/chart.js@3.2.1/dist/Chart.css"
+          integrity="sha384-bbTd6dlx5YG7th3x27pT6+RIEuWr2wtmHRwu47TvgLWpM+rQmpUcjmVgIsTyZ1Eb" crossorigin="anonymous"
+          nonce="{{ request.csp_nonce }}"
+	  rel="stylesheet">-->
+    <script src="/static/scripts/Chart.js"
+            integrity="sha384-XMZ1CmUu6cOnSxJkCmTcYk+0i1I6rs2oHuVmGZc2BitqcKnbpzlGxaPFKgslpH1A" crossorigin="anonymous"
+            nonce="{{ request.csp_nonce }}">
+    </script>
+</head>
+
+<body>
+
+<nav class="navbar navbar-expand-lg navbar-light bg-light">
+    <a class="navbar-brand" href="/">Sistema de monitoramento COVID-19</a>
+    {% if request.user.is_authenticated %}{% include 'navigation_links.html' %}{% endif %}
+</nav>
+<!--<div class="alert alert-danger">
+	O sistema passará por uma manutenção hoje, 06/06/2020, e ficará indisponível a partir das 22h até às 23h. O tempo de manutenção pode ser encurtado.
+</div>-->
+
+<div class="container-fluid col-sm-12 col-lg-12">
+    {% if debug %}
+        <a class="nav-item nav-link" href="/admin">ADMIN</a>
+    {% endif %}
+    {% include 'messages.html' %}
+    {% block content %}{% endblock %}
+</div>
+<footer class="p-3">
+    <div class="row">
+        <div class="col text-center">
+            <p>SMC19 - Sistema de monitoramento da COVID-19</p>
+        </div>
+        <div class="col text-center">
+            <a href="https://im.ufal.br/laboratorio/led/" target="_blank">LED - Laboratório de Estatística e ciência de Dados</a>
+        </div>
+    </div>
+    <div class="row-col" align="center"><a
+            href="/static/covid-19_alagoas.pdf"
+            target="_blank">Sobre o projeto</a></div>
+</footer>
+
+<script nonce="{{ request.csp_nonce }}">
+    const countyListUrl = "{% url 'monitoring:county-list' %}"
+</script>
+
+</body>
+
+</html>

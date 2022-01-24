@@ -1,0 +1,22 @@
+{% extends 'bootstrap_modal.html' %}
+
+{% load static %}
+
+{% load crispy_forms_filters %}
+
+{% block modal_id %}update-vaccination{% endblock %}
+
+{% block modal_header %}
+    <h4 class="modal-title">Editar vacinação</h4>
+{% endblock %}
+
+{% block modal_body %}
+    <form id="update-vaccination-form" method="post" action="">{% csrf_token %}
+        {{ vaccination_form|crispy }}
+    </form>
+{% endblock %}
+
+{% block modal_footer %}
+    <button class="btn btn-light" data-dismiss="modal">Cancelar</button>
+    <input type="submit" form="update-vaccination-form" class="btn btn-primary" value="Editar">
+{% endblock %}

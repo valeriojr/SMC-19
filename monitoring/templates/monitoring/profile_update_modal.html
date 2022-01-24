@@ -1,0 +1,24 @@
+{% extends 'bootstrap_modal.html' %}
+
+{% load crispy_forms_filters %}
+
+{% block modal_id %}update-profile{% endblock %}
+
+{% block modal_header %}
+    <h4 class="modal-title">Editar paciente</h4>
+{% endblock %}
+
+{% block modal_body %}
+    <form id="update-profile-form" method="post"
+          action="{% url 'monitoring:profile-update' profile.id %}">{% csrf_token %}
+        {{ update_profile_form|crispy }}
+    </form>
+{% endblock %}
+
+
+{% block modal_footer %}
+    <button class="btn btn-light" data-dismiss="modal">Cancelar</button>
+    <input type="submit" form="update-profile-form"
+           class="btn btn-primary"
+           value="Editar">
+{% endblock %}

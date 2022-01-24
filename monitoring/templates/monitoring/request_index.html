@@ -1,0 +1,33 @@
+{% extends 'base.html' %}
+
+{% load static %}
+{% load crispy_forms_filters %}
+
+{% block content %}
+    <style nonce="{{ request.csp_nonce }}">
+        .list-style-type-none { list-style-type: none; }
+    </style>
+    <div>
+        <ul class="list-style-type-none">
+            <li><h2>Pedidos</h2></li>
+            <li><a class="btn btn-primary" href="{% url 'monitoring:request-create' %}">Fazer pedido</a></li>
+        </ul>        
+    </div>
+    
+    {% for request in all_requests %}
+        <form onsubmit="return confirm('Deseja mesmo excluir?');"  method="post" action="{% url 'monitoring:request-delete' request.id %}">
+            {% csrf_token %}
+            <hr>
+            <ul>
+
+                <li>
+                    <h4>{{request.material}} ({{request.quantity}})</h4>
+                </li>
+                <h6>Feito por: {{request.name }} - {{ request.user }}</h6>
+                <h6>Unidade de saúde: {{request.unidade}}</h6>
+                <h6>Contato: {{request.cellphone}}/ {{request.email}}</h6>
+                <button type="submit" class="btn btn-danger">Excluir pedido</button>
+            </ul>
+        </form>
+    {% endfor %}
+{% endblock %}

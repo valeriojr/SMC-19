@@ -1,0 +1,19 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+    <h4>Linha do tempo</h4>
+    <p>Paciente: {{ profile.full_name }}</p>
+    <dl class="row">
+        {% for event in timeline %}
+                <dt class="col-sm-3 col-lg-2 col-md-2 text-muted">{{ event.date|date:"d/m/Y" }}</dt>
+                <dd class="col-sm-9">
+                    <div>{{ event.event }}</div>
+                    <div class="text-muted">{{ event.description }}</div>
+                </dd>
+        {% empty %}
+            <p class="text-muted">Nenhum evento encontrado</p>
+        {% endfor %}
+    </dl>
+
+{% endblock %}

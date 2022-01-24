@@ -1,0 +1,28 @@
+{% extends 'base.html' %}
+
+{% load crispy_forms_filters %}
+
+{% block content %}
+    <div class="row-col">
+        <form method="get">
+            {{ filters|crispy }}
+            <input type="submit" class="btn btn-primary" value="Filtrar">
+        </form>
+    </div>
+
+    <ul class="list-group">
+        {% for profile in profile_list %}
+            <li class="list-group-item">
+                <div class="row">
+                    <div class="col"><a href="{% url 'monitoring:profile-detail' profile.profile_id %}">{{ profile.id }}</a></div>
+                    <div class="col">{{ profile.full_name }}</div>
+                    <div class="col">{{ profile.phone }}</div>
+                </div>
+            </li>
+        {% empty %}
+            <p class="text-muted">Nenhum perfil encontrado</p>
+        {% endfor %}
+    </ul>
+    <div>
+    </div>
+{% endblock %}

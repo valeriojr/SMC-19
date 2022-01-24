@@ -1,0 +1,20 @@
+{% extends 'bootstrap_modal.html' %}
+
+{% load crispy_forms_filters %}
+
+{% block modal_id %}delete-vaccination{% endblock %}
+
+{% block modal_header %}
+    <h4 class="modal-title">Remover vacinação</h4>
+{% endblock %}
+
+{% block modal_body %}
+    <p>Tem certeza que deseja remover a vacinação {{ vaccination }}?</p>
+    <form id="delete-vaccination-form" method="post" action="">{% csrf_token %}</form>
+{% endblock %}
+
+{% block modal_footer %}
+    <button class="btn btn-light" data-dismiss="modal">Cancelar</button>
+    <input type="submit" form="delete-vaccination-form" class="btn btn-danger"
+           value="Remover">
+{% endblock %}

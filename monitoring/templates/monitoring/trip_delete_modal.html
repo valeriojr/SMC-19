@@ -1,0 +1,20 @@
+{% extends 'bootstrap_modal.html' %}
+
+{% load crispy_forms_filters %}
+
+{% block modal_id %}delete-trip{% endblock %}
+
+{% block modal_header %}
+    <h4 class="modal-title">Remover viagem</h4>
+{% endblock %}
+
+{% block modal_body %}
+    <p>Tem certeza que deseja remover a viagem {{ trip }}?</p>
+    <form id="delete-trip-form" method="post" action="">{% csrf_token %}</form>
+{% endblock %}
+
+{% block modal_footer %}
+    <button class="btn btn-light" data-dismiss="modal">Cancelar</button>
+    <input type="submit" form="delete-trip-form" class="btn btn-danger"
+           value="Remover">
+{% endblock %}

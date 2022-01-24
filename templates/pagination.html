@@ -1,0 +1,34 @@
+<ul class="pagination">
+    {% if page_obj.has_previous %}
+        <li class="page-item">
+            <a class="page-link" href="page=1">&laquo; Primeira</a>
+        </li>
+        <li class="page-item">
+            <a class="page-link" href="page={{ page_obj.previous_page_number }}">Anterior</a>
+        </li>
+    {% endif %}
+
+    <li class="page-item">
+        <a class="page-link">Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}</a>
+    </li>
+
+    {% if page_obj.has_next %}
+        <li class="page-item">
+            <a class="page-link" href="page={{ page_obj.next_page_number }}">Próxima</a>
+        </li>
+        <li class="page-item">
+            <a class="page-link" href="page={{ page_obj.paginator.num_pages }}">Última &raquo;</a>
+        </li>
+    {% endif %}
+</ul>
+<script nonce="{{ request.csp_nonce }}">
+    $(".page-link").each((i, link) => {
+        $(link).on("click", (e) => {
+            e.preventDefault();
+            var loc = location.href;
+            loc += loc.indexOf("?") === -1 ? "?" : "&";
+
+            location.href = loc + $(link).attr("href");
+        });
+    });
+</script>

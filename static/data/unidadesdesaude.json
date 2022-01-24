@@ -1,0 +1,252 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "Nome": "SAMU - Central Regional de Maceió",
+        "Endereço": " Rua Goiás, nº 800, CEP 57.055-320, Farol - Maceió AL",
+        "Foto": "<a href='https://lh5.googleusercontent.com/vZcseFTN9OIoJrDlLTvuZ5Jo0h7U4ZANpG4I50g8maZvhU3bVJW69RD5qg0ZzWWaDmAmKsNMxPg=w1416-h636'target='_blank'><img src='https://lh5.googleusercontent.com/vZcseFTN9OIoJrDlLTvuZ5Jo0h7U4ZANpG4I50g8maZvhU3bVJW69RD5qg0ZzWWaDmAmKsNMxPg=w1416-h636' width='140'; heigth='150'></a>",
+        "Fonte da Imagem": "Internet"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -35.74016940760802,
+          -9.64560508013774,
+          -1742.637841024836
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Nome": "SAMU - Central Regional de Arapiraca",
+        "Endereço": " Rua Gov. Silvestre Péricles, nº 1065, CEP: 57313-390, Brasília - Arapiraca AL",
+        "Foto": "<a href='https://lh6.googleusercontent.com/H4RoK_JQ_QFRo9U-3cZvUF6FOEw0122Bk9RmIOkG3DC0pMkmaEDubrknLWErOAzMLOvDi5bOgXU=w1416-h636'target='_blank'><img src='https://lh6.googleusercontent.com/H4RoK_JQ_QFRo9U-3cZvUF6FOEw0122Bk9RmIOkG3DC0pMkmaEDubrknLWErOAzMLOvDi5bOgXU=w1416-h636' width='140'; heigth='150'></a>",
+        "Fonte da Imagem": "Internet"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -36.64630517465506,
+          -9.757367621621523,
+          0
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Nome": "Unidade Mista Senador Arnon Afonso Farias de Melo - Hospital de Piranhas",
+        "Endereço": " Avenida Alagoas, S/N, CEP 57460-000, Xingó - Piranhas AL",
+        "Telefone": " (82) 3641-1515/1067",
+        "Foto": "<a href='https://lh3.googleusercontent.com/03d6VWs7rxOEy6yfXsDaS4Z7SwWM9mE3ZyryqpVeHuL7q0Y1LUtGvCMcnOoAhBKOcJ9DdY8aynk=w1416-h636'target='_blank'><img src='https://lh3.googleusercontent.com/03d6VWs7rxOEy6yfXsDaS4Z7SwWM9mE3ZyryqpVeHuL7q0Y1LUtGvCMcnOoAhBKOcJ9DdY8aynk=w1416-h636' width='140'; heigth='150'></a>",
+        "Fonte da Imagem": "Internet"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -37.76675224382926,
+          -9.6039051178944,
+          -1597.805432179891
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Nome": "Hospital Geral do Estado Professor Osvaldo Brandão Vilela",
+        "Endereço": " Avenida Siqueira Campos, 2095, Trapiche da Barra, CEP: 57010-001, Maceió-AL",
+        "Telefone": " (82) 3315-3281/3277",
+        "Foto": "<a href='http://www.alagoas24horas.com.br/legba/bancoDeMidia/5/0/%7B508f3ca9-64af-4db7-a18c-1f2a1803e2cb%7D_hospitalgeral.jpg'target='_blank'><img src='http://www.alagoas24horas.com.br/legba/bancoDeMidia/5/0/%7B508f3ca9-64af-4db7-a18c-1f2a1803e2cb%7D_hospitalgeral.jpg' width='140'; heigth='150'></a>",
+        "Fonte da Imagem": "http://www.alagoas24horas.com.br"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -35.75859282676346,
+          -9.672195816097114,
+          0
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Nome": "Hospital Geral Prof. Ib Gatto Falcão",
+        "Endereço": " Rua Santo Antônio, s/n, Centro - Rio Largo - AL",
+        "Telefone": " (82) 3261-3958 / 3261-2414",
+        "Foto": "<a href='http://www.painelnoticias.com.br/images/4112014184340SESAU_HOSPITAL_REFERENCIA_6_3010_site.jpg'target='_blank'><img src='http://www.painelnoticias.com.br/images/4112014184340SESAU_HOSPITAL_REFERENCIA_6_3010_site.jpg' width='140'; heigth='150'></a>",
+        "Fonte da Imagem": "http://www.painelnoticias.com.br"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -35.85375169658165,
+          -9.483104052624851,
+          0
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Nome": "Unidade de Emergência Dr Daniel Houly",
+        "Endereço": " AL 220 Km 5, S/N, Planalto - Arapiraca - AL",
+        "Telefone": "(82) 3539-8634",
+        "Foto": "<a href='https://encrypted-tbn1.gstatic.com/images?q=tbn:ANd9GcQZ89q7oOMjaJg1USctjKiUXra5Kw3YDwKL3MdQg9gHkI55sNZB5w'target='_blank'><img src='https://encrypted-tbn1.gstatic.com/images?q=tbn:ANd9GcQZ89q7oOMjaJg1USctjKiUXra5Kw3YDwKL3MdQg9gHkI55sNZB5w' width='140'; heigth='150'></a>",
+        "Fonte da Imagem": "http://www.jaenoticia.com.br"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -36.64885212634803,
+          -9.735373045070647,
+          -1522.385438065595
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Nome": "Ambulatório 24 Horas Assis Chateaubriand",
+        "Endereço": " Av. Durval de Góes Monteiro, 350, CEP 57061-000 - Tabuleiro do Martins Maceió - AL",
+        "Telefone": "(82) 3315-3502",
+        "Foto": "<a href='http://gazetaweb.globo.com//Fotos/Noticias/120913ambulatorio.jpg'target='_blank'><img src='http://gazetaweb.globo.com//Fotos/Noticias/120913ambulatorio.jpg' width='140'; heigth='150'></a>",
+        "Fonte da Imagem": "http://gazetaweb.globo.com"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -35.77321533840161,
+          -9.573287490212012,
+          -1693.1682485135
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Nome": "Ambulatório 24 Horas João Fireman",
+        "Endereço": " Rua Feição, Jacintinho, Maceió - AL",
+        "Foto": "<a href='https://lh3.googleusercontent.com/BSwjKV2CWOymlHIy5I3hZhNIb7kRAa1u-bDMN0aade4MkNqiP_6m_9FOg73w9vwMCS9WfopI624=w1416-h636'target='_blank'><img src='https://lh3.googleusercontent.com/BSwjKV2CWOymlHIy5I3hZhNIb7kRAa1u-bDMN0aade4MkNqiP_6m_9FOg73w9vwMCS9WfopI624=w1416-h636' width='140'; heigth='150'></a>",
+        "Fonte da Imagem": "Internet"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -35.72011342308446,
+          -9.644903398837277,
+          0
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Nome": "Ambulatório 24 Horas Denilma Bulhões",
+        "Endereço": " Rua Tabuleiro, S/N, CEP 57084-000 - Benedito Bentes - Maceió - AL",
+        "Telefone": "(82) 3315-4637",
+        "Foto": "<a href='http://www.saude.al.gov.br/arquivos/fotos/foto_13-02-2015_17-19-18_AMBULATORIO_DENILMA_BULHOES_3_JPG'target='_blank'><img src='http://www.saude.al.gov.br/arquivos/fotos/foto_13-02-2015_17-19-18_AMBULATORIO_DENILMA_BULHOES_3_JPG' width='140'; heigth='150'></a>",
+        "Fonte da Imagem": "http://www.saude.al.gov.br"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -35.72779647722781,
+          -9.5518280793937,
+          -1690.411495754318
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Nome": "Ambulatório 24 Horas Dom Miguel Câmara",
+        "Endereço": "Travessa do Arame, nº 245, Chã da Jaqueira - CEP  57018-508n - Maceió - AL",
+        "Foto": "<a href='http://gazetaweb.globo.com/v2/miniatura.php?v22=1&foto=%2FFotos%2FNoticias%2F170713camara.jpg'target='_blank'><img src='http://gazetaweb.globo.com/v2/miniatura.php?v22=1&foto=%2FFotos%2FNoticias%2F170713camara.jpg' width='140'; heigth='150'></a>",
+        "Fonte da Imagem": "http://gazetaweb.globo.com"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -35.74925765651942,
+          -9.615872398073321,
+          -1739.752539737295
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Nome": "Ambulatório 24 Horas Noelia Lessa",
+        "Endereço": " Rua Coronel Cahet, s/n, Levada, CEP: 57017-090 - Maceió - AL",
+        "Foto": "<a href='https://lh4.googleusercontent.com/e1MGEFt6zyv7iNmOJmYk1edhbMWD5K_Lv1tuOevPAWwyHI6bNoPVBn6u63cnkGpXE2Uxv1UMx2A=w1416-h636'target='_blank'><img src='https://lh4.googleusercontent.com/e1MGEFt6zyv7iNmOJmYk1edhbMWD5K_Lv1tuOevPAWwyHI6bNoPVBn6u63cnkGpXE2Uxv1UMx2A=w1416-h636' width='140'; heigth='150'></a>",
+        "Fonte da Imagem": "Internet"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -35.74609778124242,
+          -9.662590232533399,
+          -1789.505586980673
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Nome": "Unidade Mista Drª Quitéria Bezerra de Mello - Hospital de Água Branca",
+        "Endereço": "Rua Padre Epifânio Moura, s/nº Centro, CEP: 57490 – 000 - Água Branca - AL",
+        "Telefone": "(82) 3644-1199",
+        "Foto": "<a href='https://lh3.googleusercontent.com/RpPkC5_BzsrfFZ_e7tFhZLMYY4vj8e_DFSnAua1a1sqp_Kan6jVdyCof4vOE2lHcFwbwn5EkbbI=w1416-h636'target='_blank'><img src='https://lh3.googleusercontent.com/RpPkC5_BzsrfFZ_e7tFhZLMYY4vj8e_DFSnAua1a1sqp_Kan6jVdyCof4vOE2lHcFwbwn5EkbbI=w1416-h636' width='140'; heigth='150'></a>",
+        "Fonte da Imagem": "Internet"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -37.9344727145505,
+          -9.261263077721356,
+          -1134.485352876378
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Nome": "Clínica Infantil Daisy Brêda",
+        "Endereço": " Rua Pedro Marcelo Oliveira, s/n, CEP: 57015-170, Levada - Maceió - AL",
+        "Telefone": " (82) 3315-1685",
+        "Foto": "<a href='http://thumbor.cadaminuto.com.br/unsafe/300x200/smart/http://estatico.cadaminuto.com.br/imagens/13845497777399.jpg'target='_blank'><img src='http://thumbor.cadaminuto.com.br/unsafe/300x200/smart/http://estatico.cadaminuto.com.br/imagens/13845497777399.jpg' width='140'; heigth='150'></a>",
+        "Fonte da Imagem": "http://cadaminuto.com.br"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -35.7456656285683,
+          -9.66227080355441,
+          -1787.835065875714
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Nome": "Unidade Mista e Emergência Dr. Antenor Serpa - Hospital de D. Gouveia",
+        "Endereço": "Rua Linduarte Batista Vilar, S/N, Centro - Delmiro Gouveia AL",
+        "Telefone": " (82) 3641-1515/1067",
+        "Foto": "<a href='http://editoraguiamais.com.br/wp-content/uploads/2014/11/hospital-300x224.jpg'target='_blank'><img src='http://editoraguiamais.com.br/wp-content/uploads/2014/11/hospital-300x224.jpg' width='140'; heigth='150'></a>",
+        "Fonte da Imagem": "http://editoraguiamais.com.br"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -38.00078387732971,
+          -9.378970497905266,
+          0
+        ]
+      }
+    }
+  ]
+}

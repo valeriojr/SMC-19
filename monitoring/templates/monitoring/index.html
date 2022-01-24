@@ -1,0 +1,93 @@
+{% extends 'base.html' %}
+
+{% load static %}
+{% load crispy_forms_filters %}
+{% load static %}
+{% block content %}
+    <style nonce="{{ request.csp_nonce }}">
+        #id {
+            overflow-x: auto;
+        }
+    </style>
+    <!-- >Seção de pacientes < -->
+    <div class="row justify-content-between my-2">
+        <h4 class="col-4">Pacientes</h4>
+        <div class="col-3">
+            <a class="btn btn-primary float-right" href="{% url 'monitoring:profile-create' %}">Novo paciente</a>
+        </div>
+    </div>
+
+    {% include 'monitoring/profile_search_bar.html' %}
+
+    <!-- >Lista de pacientes no sistema < -->
+    <ul class="list-group">
+        <li class="list-group-item">
+            <div class="row">
+                <div class="col text-muted">Nome do paciente</div>
+                <div class="col-auto text-muted">Atendimentos realizados</div>
+            </div>
+        </li>
+        {% for profile in profile_list %}
+            <li class="list-group-item">
+                <div class="row">
+                    <div class="col">
+                        <a class="my-auto" href="{% url 'monitoring:profile-detail' profile.id %}">{{ profile }}</a>
+                    </div>
+                    <div class="col-auto">
+                        {{ profile.monitoring_set.count }}
+                    </div>
+                </div>
+            </li>
+        {% empty %}
+            <p class="text-muted">Nenhum paciente cadastrado</p>
+        {% endfor %}
+    </ul>
+
+    <hr>
+
+    <!-- >Tabela de últimos atendimentos < -->
+    <div class="row justify-content-between">
+        <h4 class="col-auto">Últimos atendimentos</h4>
+        <div class="col-auto">
+            <a class="btn btn-primary" href="{% url 'monitoring:monitoring-create' %}">Novo atendimento</a>
+        </div>
+    </div>
+
+    <div class="row-col my-2">
+        <div id="id-overflow-x-auto">
+            <table class="table table-hover">
+                <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Paciente</th>
+                    <th>Foi confirmado?</th>
+                    <th>Apresenta sintomas?</th>
+                    <th>Viajou recentemente?</th>
+                    <th>Apresenta comorbidades?</th>
+                </tr>
+                </thead>
+                <tbody>
+                {% for monitoring in monitorings.all %}
+                    <tr>
+                        <td><a href="{% url 'monitoring:monitoring-detail' monitoring.id %}">{{ monitoring.id }}</a>
+                        </td>
+                        <td>{{ monitoring.profile }}</td>
+                        <td>
+                            {% if monitoring.result == 'PO' %}
+                                sim
+                            {% else %}
+                                não
+                            {% endif %}
+                        </td>
+                        <td>{{ monitoring.symptom_set.all|yesno }}</td>
+                        <td>{{ monitoring.profile.trip_set.all|yesno }}</td>
+                        <td>{{ monitoring.profile.comorbidities|yesno }}</td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script src="{% static 'scripts/monitoring_create.js' %}" nonce="{{ request.csp_nonce }}"></script>
+{% endblock %}

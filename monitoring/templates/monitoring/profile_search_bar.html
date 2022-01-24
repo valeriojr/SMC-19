@@ -1,0 +1,12 @@
+<!-- >Barra de busca de paciente(s) < -->
+<div class="row-col">
+    <form method="get" class="form-inline mb-2">
+        <input type="hidden" name="search-target" value="profile">
+        <label for="search-query"></label>
+        <input id="search-query" class="form-control col mr-2 " name="term"
+               value="{{ params.term|capfirst }}" placeholder="Nome, CPF, RG...">
+        <div class="col-auto px-0">
+            <input type="submit" class="btn btn-secondary" value="Pesquisar">
+        </div>
+    </form>
+</div>

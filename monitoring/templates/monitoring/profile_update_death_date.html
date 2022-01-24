@@ -1,0 +1,52 @@
+{% extends 'base.html' %}
+
+{% load crispy_forms_filters %}
+
+{% block content %}
+    <div id="confirm" class="modal" role="dialog">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h4 class="modal-title">Confirmar data do óbito</h4>
+                    <button type="button" class="close" data-dismiss="modal">&times;</button>
+                </div>
+
+                <div class="modal-body">
+                    <span id="date"></span>
+                </div>
+
+                <div class="modal-footer">
+                    <button class="btn btn-light" data-dismiss="modal"></button>
+                    <input type="submit" form="date-form" class="btn btn-primary" value="Registrar óbito">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <form id="date-form" method="post">
+        {% csrf_token %}
+        {{ form|crispy }}
+        <button id="update-button" type="button" class="btn btn-primary" data-toggle="modal" data-target="#confirm">
+            Atualizar
+        </button>
+    </form>
+
+    <script nonce="{{ request.csp_nonce }}">
+        const date = $("#date");
+        const input = $("#id_death_date");
+
+        date.html(input.val().split("-").reverse().join("/"));
+        if (input.val() === "") {
+            $("update-button").attr("disabled", false);
+        }
+        input.on("change", () => {
+            if (input.val() === "") {
+                $("#update-button").attr("disabled", true);
+                return;
+            }
+            $("#update-button").attr("disabled", false);
+            date.html(input.val().split("-").reverse().join("/"));
+        });
+
+    </script>
+{% endblock %}

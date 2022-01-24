@@ -1,0 +1,20 @@
+{% extends 'bootstrap_modal.html' %}
+
+{% load crispy_forms_filters %}
+
+{% block modal_id %}delete-profile{% endblock %}
+
+{% block modal_header %}
+    <h4 class="modal-title">Remover paciente</h4>
+{% endblock %}
+
+{% block modal_body %}
+    <p>Tem certeza que deseja remover <strong>{{ profile }}</strong>?</p>
+    <form id="delete-profile-form" method="post" action="{% url 'monitoring:profile-delete' profile.id %}">{% csrf_token %}</form>
+{% endblock %}
+
+{% block modal_footer %}
+    <button class="btn btn-light" data-dismiss="modal">Cancelar</button>
+    <input type="submit" form="delete-profile-form" class="btn btn-danger"
+           value="Remover">
+{% endblock %}

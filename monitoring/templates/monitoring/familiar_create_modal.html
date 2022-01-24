@@ -1,0 +1,39 @@
+{% extends 'bootstrap_modal.html' %}
+
+{% load crispy_forms_filters %}
+{% load static %}
+
+{% block modal_id %}familiar-create{% endblock %}
+
+
+{% block modal_header %}
+    <h4 class="modal-title">Novo familiar</h4>
+{% endblock %}
+
+{% block modal_body %}
+<form method="post" id="familiar_create_form" action="{% url 'monitoring:profile-create' %}">{% csrf_token %}
+        {{ familiar_form|crispy }}
+        <hr>
+        <h4>Endereço principal</h4>
+        {{ primary_address_form|crispy }}
+        {{ primary_address_form.management_form }}
+    </form>
+    <script nonce="{{ request.csp_nonce }}">
+        $("#id_birth_date").on('change', () => {
+            var birth_date = new Date($("#id_birth_date").val());
+            var today = new Date();
+            var diff = new Date(milisecond = (today - birth_date));
+            var age =  Math.abs(diff.getFullYear() - 1970);
+            $("#id_age").val(age);
+            console.log(age);
+        });
+
+    </script>
+
+    <script src="{% static 'scripts/calc_cep.js' %}" nonce="{{ request.csp_nonce }}"></script>
+{% endblock %}
+
+{% block modal_footer %}
+    <button class="btn btn-light" data-dismiss="modal">Cancelar</button>
+    <input type="submit" form="familiar_create_form" class="btn btn-primary" value="Criar">
+{% endblock %}

@@ -1,0 +1,21 @@
+{% extends 'bootstrap_modal.html' %}
+
+{% load crispy_forms_filters %}
+
+{% block modal_id %}create-address{% endblock %}
+
+{% block modal_header %}
+    <h4 class="modal-title">Novo endereço</h4>
+{% endblock %}
+
+{% block modal_body %}
+    <form id="create-address-form" class="form-group" method="post"
+          action="{% url 'monitoring:address-create' profile.id %}">{% csrf_token %}
+        {{ address_form|crispy }}
+    </form>
+{% endblock %}
+
+{% block modal_footer %}
+    <button class="btn btn-light" data-dismiss="modal">Cancelar</button>
+    <input type="submit" form="create-address-form" class="btn btn-primary" value="Criar">
+{% endblock %}

@@ -1,0 +1,27 @@
+{% extends 'base.html' %}
+
+{% load crispy_forms_filters %}
+
+{% block navigation %}
+
+{% endblock %}
+
+{% block content %}
+    <div class="row justify-content-center mt-5">
+        <div class="col-sm col-md-6 col-lg-9">
+            <form method="post">
+                {% csrf_token %}
+                <div class="form-row">
+                    <div class="form-group col">{{ form.username|as_crispy_field }}</div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group col">{{ form.password|as_crispy_field }}</div>
+                </div>
+                <div class="form-row text-center">
+                    <div class="form-group col"><input type="submit" class="btn btn-primary" value="Entrar"></div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+{% endblock %}

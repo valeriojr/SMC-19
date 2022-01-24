@@ -1,0 +1,304 @@
+{% extends 'base.html' %}
+
+{% load static %}
+{% load crispy_forms_filters %}
+
+{% block content %}
+    <div class="container card">
+        <div class="row">
+
+            <div class="col p-3 text-center my-auto">
+                {% with request.resolver_match.kwargs.group as group %}
+                    <img src="{% static 'images' %}/{{ group }}.png" alt="Prefeitura de {{ group|title }}" width="200px"
+                         height="50px">
+                {% endwith %}
+            </div>
+            <div class="col p-3 text-center my-auto">
+                <strong>INFORME EPIDEMIOLÓGICO</strong>
+		<br>
+		Última atualização: {{ last_update }}
+            </div>
+            <div class="col p-3 my-auto ">
+                <form method="get" class="form-inline">
+                    {{ form|crispy }}
+                    <input type="submit" class="btn btn-primary ml-2" value="Filtrar">
+                </form>
+            </div>
+        </div>
+
+        <div class="row px-5">
+            <div class="col my-4">
+                <div class="card text-center">
+                    <div class="card-body text-white bg-info rounded">
+                        <h5 class="card-title display-4 font-weight-bold">{{ total.confirmed }}</h5>
+                        <a href="#" class="text-white">Casos confirmados</a>
+                    </div>
+                </div>
+            </div>
+            <div class="col my-4">
+                <div class="card text-center">
+                    <div class="card-body text-white bg-primary rounded">
+                        <h5 class="card-title display-4 font-weight-bold">{{ total.suspect }}</h5>
+                        <a href="#" class="text-white">Casos suspeitos</a>
+                    </div>
+                </div>
+            </div>
+            <div class="col my-4">
+                <div class="card text-center">
+                    <div class="card-body text-white bg-primary rounded">
+                        <h5 class="card-title display-4 font-weight-bold">{{ total.recovered }}</h5>
+                        <a href="#" class="text-white">Casos recuperados*</a>
+                    </div>
+                </div>
+            </div>
+            <div class="col my-4">
+                <div class="card text-center">
+                    <div class="card-body text-white bg-primary rounded">
+                        <h5 class="card-title display-4 font-weight-bold">{{ total.deaths }}</h5>
+                        <a href="#" class="text-white">Óbitos confirmados</a>
+                    </div>
+                </div>
+            </div>
+            <div class="col my-4">
+                <div class="card text-center">
+                    <div class="card-body text-white bg-primary rounded">
+                        <h5 class="card-title display-4 font-weight-bold">{{ total.monitored }}</h5>
+                        <a href="#" class="text-white">Casos monitorados</a>
+                    </div>
+                </div>
+            </div>
+            <div class="col my-4">
+                <div class="card text-center">
+                    <div class="card-body text-white bg-primary rounded">
+                        <h5 class="card-title display-4 font-weight-bold">{{ total.discarded }}</h5>
+                        <a href="#" class="text-white">Casos descartados</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-lg-6 col-sm-12 col-md-6">
+                <div class="text-center">Gráfico diário</div>
+                <div class="text-center">
+                    <span>  </span>
+                    <span class="badge badge-warning rounded">  </span> Casos suspeitos
+                    <span>  </span>
+                    <span class="badge badge-primary rounded">  </span> Casos confirmados
+                    <span>  </span>
+                    <span class="badge badge-success rounded">  </span> Recuperados
+                    <span>  </span>
+                    <span class="badge badge-danger rounded">  </span> Óbitos
+                </div>
+                <svg id="daily-stats" class="card w-100"></svg>
+            </div>
+            <div class="col">
+                <div class="text-center">Gráfico acumulado</div>
+                <div class="text-center">
+                    <span>  </span>
+                    <span class="badge badge-warning rounded">  </span> Casos suspeitos
+                    <span>  </span>
+                    <span class="badge badge-primary rounded">  </span> Casos confirmados
+                    <span>  </span>
+                    <span class="badge badge-success rounded">  </span> Recuperados
+                    <span>  </span>
+                    <span class="badge badge-danger rounded">  </span> Óbitos
+                </div>
+                <svg id="accumulated-stats" class="card w-100"></svg>
+            </div>
+        </div>
+
+        <div class="row-col mt-5">
+            <div class="alert alert-warning">
+                &#9888 O número de recuperados representa os pacientes que apresentaram os primeiros sintomas há mais de
+                14 dias e estão 72h sem apresentar sintomas.
+            </div>
+        </div>
+    </div>
+
+    {{ stats|json_script:'stats' }}
+
+    <script src="{% static 'scripts/charts.js' %}" nonce="{{ request.csp_nonce }}"></script>
+    <script nonce="{{ request.csp_nonce }}">
+        var parseTime = d3.timeParse("%Y-%m-%d");
+
+        const stats = JSON.parse($("#stats").html());
+        stats.forEach(function (d) {
+            d.date = parseTime(d.date);
+        });
+
+        const accumulatedStats = new Array(stats.length);
+        accumulatedStats[0] = stats[0];
+        for (var i = 1; i < stats.length; i++) {
+            accumulatedStats[i] = {
+                suspect: stats[i].suspect + accumulatedStats[i - 1].suspect,
+                confirmed: stats[i].confirmed + accumulatedStats[i - 1].confirmed,
+                deaths: stats[i].deaths + accumulatedStats[i - 1].deaths,
+                recovered: stats[i].recovered + accumulatedStats[i - 1].recovered,
+                monitored: stats[i].monitored + accumulatedStats[i - 1].monitored,
+                date: stats[i].date
+            };
+        }
+
+        console.log(accumulatedStats);
+
+        const h = 300;
+        var w;
+        const marginLeft = 30;
+        const marginRight = 20;
+        const marginBottom = 20;
+        var chartWidth;
+        var chartHeight;
+        var x;
+        var y;
+        var svg;
+        var xAxis;
+
+        function draw_graph(selector, data, key, color, type) {
+            var chart = $(selector);
+            w = chart.css("width");
+            chartWidth = parseInt(w) - (marginLeft + marginRight);
+            chartHeight = h - marginBottom;
+            chart.css("height", `${h}px`);
+
+            x = d3.scaleTime().range([marginLeft, w]);
+            y = d3.scaleLinear().range([h - marginBottom, 0]);
+
+            xAxis = d3.axisBottom(x);
+
+            svg = d3.select(selector)
+                .attr("width", w)
+                .attr("height", h)
+                .append("g");
+            x.domain(d3.extent(data, function (d) {
+                return d.date;
+            }));
+            y.domain([0, d3.max(data, function (d) {
+                return Math.max(d.suspect, d.confirmed, d.deaths, d.recovered) + 10;
+            })]);
+
+            if (type === "line") {
+                svg.selectAll()
+                    .data(data)
+                    .enter()
+                    .append("line")
+                    .attr("stroke-width", "2")
+                    .attr("stroke", color)
+                    .attr("fill", "none")
+                    .attr("x1", function (d, i) {
+                        return x(d.date);
+                    })
+                    .attr("y1", function (d, i) {
+                        return y(d[key]);
+                    })
+                    .attr("x2", function (d, i) {
+
+                        if (i < data.length - 1) {
+                            return x(data[i + 1].date);
+                        } else {
+                            return x(data[data.length - 1].date);
+                        }
+                    })
+                    .attr("y2", function (d, i) {
+                        if (i < data.length - 1) {
+                            return y(data[i + 1][key]);
+                        } else {
+                            return y(data[data.length - 1][key]);
+                        }
+                    });
+            } else if (type === "bar") {
+                svg.selectAll("bar")
+                    .data(data)
+                    .enter()
+                    .append("rect")
+                    .attr("x", function (d) {
+                        return parseFloat(x(d.date)) - (chartWidth / data.length) / 2;
+                    })
+                    .attr("y", function (d) {
+                        return y(d[key]);
+                    })
+                    .attr("width", chartWidth / data.length)
+                    .attr("height", function (d) {
+                        return chartHeight - y(d[key]);
+                    })
+                    .style("fill", color);
+            }
+        }
+
+        function draw_x_axis(data) {
+            svg.append("g")
+                .attr("transform", `translate(${marginLeft}, 0)`)
+                .call(d3.axisLeft(y));
+            svg.append("g")
+                .attr("transform", `translate(${marginLeft}, ${chartHeight})`)
+                .append("line")
+                .attr("x1", 0)
+                .attr("y1", 1)
+                .attr("x2", chartWidth)
+                .attr("y2", 1)
+                .style("stroke", "black");
+            // ticks
+            svg.selectAll()
+                .data(data)
+                .enter()
+                .append("line")
+                .attr("transform", function (d) {
+                    return `translate(${parseFloat(x(d.date))}, ${chartHeight})`;
+                })
+                .attr("x1", 0)
+                .attr("y1", 0)
+                .attr("x2", 0)
+                .attr("y2", function (d, i) {
+                    if (i % 10 === 1) {
+                        return 5;
+                    } else {
+                        return 2;
+                    }
+                })
+                .style("stroke", "black");
+
+            svg.selectAll()
+                .data(data)
+                .enter()
+                .append("text")
+                .attr("transform", function (d, i) {
+                    return `translate(${parseFloat(x(d.date))}, ${chartHeight + 15})`;
+                })
+                .attr("text-anchor", "middle")
+                .attr("font-size", "10")
+                .text(function (d, i) {
+                    if (i % 10 === 1) {
+                        const date = d.date.getDate();
+                        const month = d.date.getMonth() + 1;
+                        return `${date < 10 ? "0" + date.toString() : date}/${month < 10 ? "0" + month.toString() : month}`;
+                    } else {
+                        return "";
+                    }
+                });
+        }
+
+        const graphs = {
+            "#daily-stats": {
+                "data": stats,
+                "keys": ["confirmed", "suspect", "recovered", "deaths"],
+                "color": ["steelblue", "orange", "lime", "red"],
+                "type": ["bar", "line", "line", "line"],
+            },
+            "#accumulated-stats": {
+                "data": accumulatedStats,
+                "keys": ["confirmed", "suspect", "recovered", "deaths"],
+                "color": ["steelblue", "orange", "lime", "red"],
+                "type": ["bar", "line", "line", "line"]
+            },
+        };
+
+        $.each(graphs, function (g) {
+            console.log(g);
+            for (var i = 0; i < graphs[g].keys.length; i++) {
+                draw_graph(g, graphs[g].data, graphs[g].keys[i], graphs[g].color[i], graphs[g].type[i]);
+            }
+            draw_x_axis(graphs[g].data);
+        });
+
+    </script>
+{% endblock %}

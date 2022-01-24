@@ -1,0 +1,48 @@
+{% extends 'base.html' %}
+
+{% load static %}
+{% load crispy_forms_filters %}
+
+{% block content %}
+    <form method="post">{% csrf_token %}
+        {{ form|crispy }}
+        <hr>
+        <h4>Endereço principal</h4>
+        {{ primary_address_form|crispy }}
+        {{ primary_address_form.management_form }}
+        <div class="form-row justify-content-end">
+            <div class="form-group"><input type="submit" class="btn btn-primary" value="Cadastrar paciente"></div>
+        </div>
+
+    </form>
+    {% comment %}
+    <!-- Para usar a tag {%  url %} é preciso estar no template -->
+    {% endcomment %}
+    <script nonce="{{ request.csp_nonce }}">const neighbourhoodListUrl = "{% url 'monitoring:neighbourhood-list' %}"</script>
+    <script src="{% static 'scripts/profile_form.js' %}" nonce="{{ request.csp_nonce }}"></script>
+    <script src="{% static 'scripts/calc_cep.js' %}" nonce="{{ request.csp_nonce }}"></script>
+    <script nonce="{{ request.csp_nonce }}">
+        // Ordenar checkboxes
+        // Retirado de https://stackoverflow.com/a/282711/13210255
+
+        var list = $('#div_id_comorbidities > div');
+
+        var items = list.children();
+        var itemsArr = [];
+        for (var i in items) {
+            if (items[i].nodeType === 1) { // get rid of the whitespace text nodes
+                itemsArr.push(items[i]);
+            }
+        }
+
+        itemsArr.sort(function (a, b) {
+            a = $(a).find("label").html();
+            b = $(b).find("label").html();
+            return a === b ? 0 : (a > b ? 1 : -1);
+        });
+
+        for (i = 0; i < itemsArr.length; ++i) {
+            list.append(itemsArr[i]);
+        }
+    </script>
+{% endblock %}

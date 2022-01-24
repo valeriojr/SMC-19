@@ -1,0 +1,34 @@
+{% extends 'bootstrap_modal.html' %}
+
+{% load crispy_forms_filters %}
+
+{% block modal_id %}create-trip{% endblock %}
+
+{% block modal_header %}
+    <h4 class="modal-title">Nova viagem</h4>
+{% endblock %}
+
+{% block modal_body %}
+    <form id="create-trip-form" method="post" action="{% url 'monitoring:trip-create' profile.id %}">
+        {% csrf_token %}
+        {{ trip_form|crispy }}
+    </form>
+    <script nonce="{{ request.csp_nonce }}">
+    const stateSelect = $("#id_state");
+    stateSelect.on("change", function(){
+        $.getJSON("{% url "monitoring:county-list" %}?uf=" + stateSelect.val(), function (response){
+            const countySelect = $("#id_county");
+            countySelect.empty();
+            console.log(response);
+            $.each(response, function (i, county) {
+                countySelect.append(`<option value="${county}">${county}</option>`);
+            })
+        });
+    });
+    </script>
+{% endblock %}
+
+{% block modal_footer %}
+    <button class="btn btn-light" data-dismiss="modal">Cancelar</button>
+    <input type="submit" form="create-trip-form" class="btn btn-primary" value="Criar">
+{% endblock %}

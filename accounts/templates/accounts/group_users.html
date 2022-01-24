@@ -1,0 +1,120 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    <h2>Usuários Ativos</h2>
+    <form id="deactivate-form" method="POST" action="{% url 'accounts:update-account-status' %}">{% csrf_token %}
+        <table class="table">
+            <thead>
+                <tr>
+                    <th scope="col">Nome</th>
+                    <th scope="col">Tipo</th>
+                    <th scope="col">Unidade de Saúde</th>
+                    <th scope="col">Data de criação</th>
+                    <th scope="col">Resetar Senha</th>
+                    <th scope="col">Desativar</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for user in active_group_users.object_list %}
+                    <tr>
+                        <td>{{ user.first_name }} {{ user.last_name }}</td>
+                        <td>{{ user.get_user_profile_display }}</td>
+                        <td>{{ user.health_center.center_name }}</td>
+                        <td>{{ user.date_joined.date }}</td>
+                        <td><a href="{% url 'accounts:reset-user-password' user.id %}" class="btn btn-primary">Resetar</a></td>
+                        <td>
+                            <div class="custom-control custom-checkbox text-center">
+                                <input type="checkbox" class="custom-control-input" id="defaultUnchecked-{{ user.id }}" name="deactivate-{{ user.id }}">
+                                <label class="custom-control-label" for="defaultUnchecked-{{ user.id }}"></label>
+                            </div>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        <div class="row">
+            <div class="col-4">
+              <button type="submit" class="btn btn-danger btn-block">Desativar usuários selecionados</button>
+            </div>
+            <div class="col-8">
+                <nav aria-label="Page navigation example">
+                    <ul class="pagination justify-content-end">
+                        <li class="page-item {% if not active_group_users.has_previous %} disabled {% endif %}">
+                            <a class="page-link" href="{% url 'accounts:list-group-users' %}?active_page={{ active_group_users_paginator.previous_page_number }}&inactive_page={{ inactive_page_number }}" tabindex="-1">Anterior</a>
+                        </li>
+                        {% for i in active_group_users_paginator.page_range %}
+                            <li class="page-item"><a class="page-link" href="{% url 'accounts:list-group-users' %}?active_page={{ i }}&inactive_page={{ inactive_page_number }}">{{ i }}</a></li>
+                        {% endfor %}
+                        <li class="page-item {% if not active_group_users.has_next %} disabled {% endif %}">
+                            <a class="page-link" href="{% url 'accounts:list-group-users' %}?active_page={{ active_group_users_paginator.next_page_number }}&inactive_page={{ inactive_page_number }}" tabindex="-1">Próximo</a>
+                        </li>
+                    </ul>
+                </nav>
+            </div>
+        </div>
+    </form>
+    <h2>Usuários Inativos</h2>
+    <form id="activate-form" method="POST" action="{% url 'accounts:update-account-status' %}">{% csrf_token %}
+        <table class="table">
+            <thead>
+                <tr>
+                    <th scope="col">Nome</th>
+                    <th scope="col">Tipo</th>
+                    <th scope="col">Unidade de Saúde</th>
+                    <th scope="col">Data de criação</th>
+                    <th scope="col">Resetar Senha</th>
+                    <th scope="col">Ativar</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for user in inactive_group_users.object_list %}
+                    <tr>
+                        <td>{{ user.first_name }} {{ user.last_name }}</td>
+                        <td>{{ user.get_user_profile_display }}</td>
+                        <td>{{ user.health_center.center_name }}</td>
+                        <td>{{ user.date_joined.date }}</td>
+                        <td><a href="{% url 'accounts:reset-user-password' user.id %}" class="btn btn-primary">Resetar</a></td>
+                        <td>
+                            <div class="custom-control custom-checkbox text-center">
+                                <input type="checkbox" class="custom-control-input" id="defaultUnchecked-{{ user.id }}" name="deactivate-{{ user.id }}">
+                                <label class="custom-control-label" for="defaultUnchecked-{{ user.id }}"></label>
+                            </div>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        <div class="row">
+            <div class="col-4">
+              <button type="submit" class="btn btn-success btn-block">Ativar usuários selecionados</button>
+            </div>
+            <div class="col-8">
+                <nav aria-label="Page navigation example">
+                    <ul class="pagination justify-content-end">
+                        <li class="page-item {% if not inactive_group_users.has_previous %} disabled {% endif %}">
+                            <a class="page-link" href="{% url 'accounts:list-group-users' %}?inactive_page={{ inactive_group_users_paginator.previous_page_number }}&active_page={{ active_page_number }}" tabindex="-1">Anterior</a>
+                        </li>
+                        {% for i in inactive_group_users_paginator.page_range %}
+                            <li class="page-item"><a class="page-link" href="{% url 'accounts:list-group-users' %}?inactive_page={{ i }}&active_page={{ active_page_number }}">{{ i }}</a></li>
+                        {% endfor %}
+                        <li class="page-item {% if not inactive_group_users.has_next %} disabled {% endif %}">
+                            <a class="page-link" href="{% url 'accounts:list-group-users' %}?inactive_page={{ inactive_group_users_paginator.next_page_number }}&active_page={{ active_page_number }}" tabindex="-1">Próximo</a>
+                        </li>
+                    </ul>
+                </nav>
+            </div>
+        </div>
+    </form>
+    <script nonce="{{ request.csp_nonce }}">
+        $("#activate-form").submit( function(event) {
+            if (!confirm("Tem certeza que deseja ativar os perfis selecionados ?")) {
+                event.preventDefault();
+            }
+        });
+        $("#deactivate-form").submit(function(event) {
+            if (!confirm("Tem certeza que deseja desativar os perfis selecionados ?")){
+                event.preventDefault();
+            }
+        });
+    </script>
+{% endblock %}

@@ -1,0 +1,93 @@
+{% extends 'base.html' %}
+
+{% load crispy_forms_tags %}
+{% load crispy_forms_filters %}
+
+{% block content %}
+    {% comment %}Formulário para filtrar resultados{% endcomment %}
+    <div class="row-col">
+        <form id="id_filters-form" method="get">
+            {{ filter.form|crispy }}
+            <input type="submit" class="btn btn-primary" value="Filtrar">
+            <input type="button" id="button_id_export" class="btn btn-light" value="Exportar">
+        </form>
+    </div>
+
+    <div class="row-col mt-3">
+        <div class="alert alert-success">{{ paginator.count }} resultados encontrados</div>
+        <table class="table">
+            <thead>
+            {% for column in columns %}
+                <th>{{ column }}</th>
+            {% endfor %}
+            </thead>
+            <tbody>
+            {% for result in page_obj %}
+                    <tr>
+                    {% ifequal report_type 'profile' %}
+                        <td>{{ result }}</td>
+                        <td>{{ result.cpf }}</td>
+                        <td>{{ result.birth_date|date:'d/m/Y' }}</td>
+                        <td>{{ result.phone_number }}</td>
+                    {% endifequal %}
+                    {% ifequal report_type 'monitoring' %}
+                        <td>{{ result.profile.full_name }}</td>
+                        <td>{{ result.profile.cpf }}</td>
+                        <td>{{ result.attendance_date|date:'d/m/Y' }}</td>
+                        <td>{{ result.health_center.center_name|default:'-' }}</td>
+                        <td>{{ result.get_result_display|default:'-' }}</td>
+                        <td>{{ result.get_medical_referral_display|default:'-' }}</td>
+                        <td>{{ result.get_medical_referral_status_display|default:'-' }}</td>
+                        <td>{{ result.medical_referral_duration }}</td>
+                    {% endifequal %}
+                    {% ifequal report_type 'address' %}
+                        <td>{{ result.profile.full_name }}</td>
+                        <td>{{ result.get_type_display|default:'-' }}</td>
+                        <td>{{ result.street_name|default:'-' }}</td>
+                        <td>{{ result.number|default:'-' }}</td>
+                        <td>{{ result.complement|default:'-' }}</td>
+                        <td>{{ result.neighbourhood|default:'-' }}</td>
+                        <td>{{ result.postal_code|default:'-' }}</td>
+                    {% endifequal %}
+                    </tr>
+            {% empty %}
+                <p class="text-muted text-center">Nenhum resultado encontrado</p>
+            {% endfor %}
+        </table>
+        <div class="my-3">
+            {% include 'pagination.html' %}
+        </div>
+    </div>
+
+    <div class="overflow-auto">
+        {{ report|safe }}
+    </div>
+
+    <script nonce="{{ request.csp_nonce }}">
+        const report_type = $("#id_report_type");
+        report_type.on("input", function () {
+            $("#id_filters-form").submit();
+        });
+
+        const statusSelect = $("#id_status");
+
+        statusSelect.on("change", function () {
+            $(".status-field").each((i, field) => {
+                $(field).val("");
+            });
+            $("#id_" + this.value + "_date__lte").val(new Date().toISOString().split("T")[0].split("-").reverse().join("/"));
+        });
+
+        report_type.trigger("change");
+
+        $("#div_id_test").hide();
+        $("#button_id_export").on("click", function () {
+            const form = $("#id_filters-form");
+            form.append('{% csrf_token %}');
+            form.attr("method", "post");
+            form.submit();
+            form.children().last().remove();
+            form.attr("method", "get");
+        });
+    </script>
+{% endblock %}

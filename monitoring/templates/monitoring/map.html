@@ -1,0 +1,499 @@
+{% extends 'base.html' %}
+
+{% load static %}
+{% load crispy_forms_filters %}
+
+{% block content %}
+    <style nonce="{{ request.csp_nonce }}">
+        .display-none {
+            display: none;
+        }
+
+        .height-500 {
+            height: 400px;
+        }
+
+        .height-50 {
+            height: 150px;
+        }
+
+        path {
+            fill: #ccc;
+            stroke: #777;
+            stroke-width: .5px;
+        }
+
+        path.active {
+            stroke: yellow;
+            stroke-width: 1px;
+        }
+
+        path.selected {
+            stroke: greenyellow;
+            stroke-width: 1px;
+        }
+
+        .tooltip {
+            color: dimgray;
+            background-color: whitesmoke;
+            padding: 8px;
+            border-radius: 8px;
+            pointer-events: none;
+            position: absolute;
+            opacity: 1;
+            text-align: center;
+        }
+
+        .domain {
+            fill: none
+        }
+
+
+        .line {
+            stroke-width: 3;
+            fill: none
+        }
+    </style>
+
+    <form method="get">
+        {{ form|crispy }}
+        <input type="submit" class="btn btn-primary" value="Filtrar">
+    </form>
+
+    <div class="container card">
+        <p class="row-col text-center text-uppercase font-weight-bold p-1">
+            Número de casos confirmados no estado de Alagoas
+        </p>
+        <div class="row-col height-50">
+            <div id="date-select"></div>
+        </div>
+        <p class="row-col text-center mb-2">
+            Data da confirmação
+        </p>
+
+        <p class="row-col text-center text-uppercase font-weight-bold p-1">
+            Taxa de incidência nos municípios alagoanos (Número de casos a cada 1.000 habitantes)
+        </p>
+        <div class="row height-500">
+            <div id="map" class="col-sm-12 col-md-12 col-lg-12 p-0"></div>
+        </div>
+        <small class="text-muted p-1">Fonte: Secretaria Estadual de Saúde de Alagoas. Atualizado em 04/06/2020</small>
+    </div>
+
+    {{ data|json_script:'data' }}
+
+    <script nonce="{{ request.csp_nonce }}">
+        const territory_stats = JSON.parse(document.getElementById('territoryData').textContent);
+    </script>
+    {{ health_center_stats|json_script:'healthCenterData' }}
+    <script nonce="{{ request.csp_nonce }}">
+        const health_center_stats = JSON.parse(document.getElementById('healthCenterData').textContent);
+    </script>
+
+    <script nonce="{{ request.csp_nonce }}">
+        const STATIC_URL = "{% static '' %}";
+    </script>
+
+    <script nonce="{{ request.csp_nonce }}">
+        /*
+        * Acumula os dados diários dos municípios para obter os dados do estado
+        */
+        function getAccumulatedData(data) {
+            const accumulated = [];
+
+            $.each(data, (date, i) => {
+                const entry = {
+                    date: d3.timeParse('%Y-%m-%d')(date),
+                    value: 0,
+                };
+                $.each(data[date], (d, i) => {
+                    entry.value += i;
+                });
+                accumulated.push(entry);
+            });
+
+            return accumulated;
+        }
+
+        /*
+        * Atualiza os dados do mapa
+        * */
+        function update(g) {
+            g.attr("d", path)
+                .transition()
+                .duration(0)
+                .style("fill", function (d) {
+                    const c = d.properties;
+
+                    if (date in data && c.name in data[date]) {
+                        return colorScale(incidence(data[date][c.name], c.population));
+                    } else {
+                        return "white";
+                    }
+                });
+        }
+
+        /*
+        * Calcula a taxa de incidência por mil habitantes
+        */
+        function incidence(cases, population) {
+            return cases / (population / 1000);
+        }
+
+        const data = JSON.parse(document.getElementById("data").innerHTML);
+        const accumulatedData = getAccumulatedData(data);
+
+        /*
+        * Popula o select com as datas possíveis
+        * */
+        const dateSelect = $("#date");
+        $.each(data, (date) => {
+            dateSelect.append($("<option/>").html(date.split("-").reverse().join("/")).val(date));
+        });
+
+        var date = Object.keys(data)[0];
+        const map = $("#map");
+        var width = parseInt(map.css("width"));
+        var height = parseInt(map.css("height"));
+        const projection = d3.geoMercator().scale(1);
+        const path = d3.geoPath().projection(projection);
+        // índice de incidência (1000 hab) -> cor
+        const colorScale = d3.scaleLinear();
+        const color = $("#id_classification").val() === "confirmado" ? "red" : "purple";
+        const fontSize = 12;
+
+        /*
+        * Obtém o mapa do servidor e plota o gráfico
+        * */
+        $.getJSON('/static/data/municipios.json', (geojsonData) => {
+            /*
+            * Cria o svg
+            * */
+            const mapMargin = {top: 10, left: 75, bottom: 10, right: 10};
+            const mapSvg = d3.select("#map").append("svg")
+                .attr("width", width)
+                .attr("height", height);
+            const container = mapSvg.append("g")
+                .attr("transform", `translate(${mapMargin.left}, 0)`);
+            const last = Object.values(data)[Object.keys(data).length - 1];
+            const maxIncidence = d3.max(geojsonData.features, (d) => {
+                if (d.properties.name in last) {
+                    return incidence(last[d.properties.name], d.properties.population);
+                }
+                return 0;
+            });
+            const incidenceScale = d3.axisLeft(d3.scaleLinear()
+                .domain([0, maxIncidence])
+                .range([height - (mapMargin.bottom + mapMargin.top), mapMargin.top]));
+
+            /*
+            * Define o domínio da escala de cores com base na incidência máxima
+            * */
+            colorScale.domain([0, maxIncidence]).range(["white", color]);
+
+            /*
+            * Define as coordenadas e o nível de zoom iniciais do mapa
+            * */
+            projection.fitExtent([[mapMargin.left, mapMargin.top], [width - mapMargin.right, height - mapMargin.bottom]], geojsonData);
+            const clip = container.append("clipPath")
+                .attr("id", "clip")
+                .append("rect")
+                .attr("x", mapMargin.left)
+                .attr("y", 0)
+                .attr("width", width - mapMargin.left - 5)
+                .attr("height", height);
+
+            const mapBody = container.append("g")
+                .attr("clip-path", "url(#clip)");
+            const g = mapBody.selectAll()
+                .data(geojsonData.features)
+                .enter()
+                .append("path");
+            update(g);
+
+            /*
+            * Adiciona o nome dos municípios quando o mapa é ampliado
+            * */
+            mapBody.selectAll()
+                .data(geojsonData.features)
+                .enter()
+                .append("text")
+                .attr("x", function (d) {
+                    return path.centroid(d)[0];
+                })
+                .attr("y", function (d) {
+                    return path.centroid(d)[1];
+                })
+                .attr("text-anchor", "middle")
+                .attr("font-size", `0px`) // Deixa o texto invisível inicialmente
+                .text(function (d) {
+                    return d.properties.description;
+                });
+
+            /*
+            * Aplica o zoom no mapa
+            * */
+            mapSvg.call(d3.zoom()
+                .scaleExtent([1, 16])
+                .on('zoom', function () {
+                    container.selectAll("path").attr("transform", d3.event.transform);
+                    container.selectAll("text")
+                        .attr("transform", d3.event.transform)
+                        .attr("font-size", function (d) {
+                            if (d3.event.transform.k > 2) {
+                                return `${fontSize / d3.event.transform.k}px`;
+                            }
+                            return "0px";
+                        });
+                })
+            );
+
+            function clamp(num, min, max) {
+                return num <= min ? min : num >= max ? max : num;
+            }
+
+
+            /*
+            * Adiciona eixo lateral com a escala de incidência
+            * */
+
+            const gradient = mapSvg.append("defs")
+                .append("linearGradient")
+                .attr("id", "gradient")
+                .attr("x1", 0)
+                .attr("y1", 1)
+                .attr("x2", 0)
+                .attr("y2", 0);
+
+            gradient.append("stop")
+                .attr("stop-color", "white")
+                .attr("offset", "0%");
+            gradient.append("stop")
+                .attr("stop-color", color)
+                .attr("offset", "100%");
+
+            mapSvg.append("rect")
+                .attr("x", mapMargin.left)
+                .attr("y", mapMargin.top)
+                .attr("width", 25)
+                .attr("height", height - (mapMargin.bottom + mapMargin.top))
+                .style("fill", "url(#gradient)");
+
+            mapSvg.append("g")
+                .attr("transform", `translate(${mapMargin.left}, 0)`)
+                .call(incidenceScale.ticks(10, ".2f"));
+            mapSvg.append("text")
+                .attr("font-size", "1em")
+                .attr("font-anchor", "middle")
+                .attr("transform", `translate(24, ${height / 2 + 150}) rotate(-90)`)
+                .text("Taxa de incidência (por 1.000 habitantes)");
+
+            /*
+            * Adiciona gráfico de casos para seleção da data
+            * */
+            const dateSelectGraph = $("#date-select");
+            height = 150;
+            parseInt(dateSelectGraph.css("height"));
+            width = parseInt(dateSelectGraph.css("width"));
+            const lineSvg = d3.select("#date-select").append("svg")
+                .attr("width", width)
+                .attr("height", height);
+
+            const lineMargin = {top: 30, left: 75, bottom: 20, right: 30};
+            const x = d3.scaleTime().domain(d3.extent(accumulatedData, (d) => {
+                return d.date;
+            })).range([lineMargin.left, width - lineMargin.right]);
+            const y = d3.scaleLinear().domain([0, d3.max(accumulatedData, (d) => {
+                return d.value;
+            })]).range([height - lineMargin.bottom, lineMargin.top]);
+            const bisectDate = d3.bisector(function (d) {
+                return d.date;
+            }).left;
+
+            const area = lineSvg.selectAll()
+                .data([accumulatedData])
+                .enter()
+                .append("path")
+                .attr("d", d3.area()
+                    .x(function (d) {
+                        return x(d.date);
+                    })
+                    .y0(height - lineMargin.bottom)
+                    .y1(function (d) {
+                        return y(d.value);
+                    }))
+                .style("fill", color)
+                .style("opacity", 0.5);
+
+            const line = lineSvg.selectAll()
+                .data([accumulatedData])
+                .enter()
+                .append("path")
+                .attr("class", "line")
+                .attr("d", d3.line()
+                    .x((d) => {
+                        return x(d.date);
+                    })
+                    .y((d) => {
+                        return y(d.value);
+                    }))
+                .style("stroke", color);
+
+
+            /*
+            * Adiciona o eixo horizontal com as datas
+            * */
+            lineSvg.append("g")
+                .attr("transform", `translate(0, ${height - lineMargin.bottom})`)
+                .style("user-select", "none")
+                .call(d3.axisBottom(x)
+                    .ticks(d3.timeWeek, 1)
+                    .tickFormat(d3.timeFormat('%d/%m')));
+
+            /*
+            * Adiciona o eixo vertical com a quantidade de casos em todo o estado
+            * */
+
+            lineSvg.append("g")
+                .attr("transform", `translate(${lineMargin.left}, 0)`)
+                .style("user-select", "none")
+                .call(d3.axisLeft(y)
+                    .ticks(5, "s"));
+
+            lineSvg.append("text")
+                .attr("font-size", "1em")
+                .attr("text-anchor", "middle")
+                .attr("transform", `translate(${lineMargin.left / 2}, ${height / 2}) rotate(-90)`)
+                .style("user-select", "none")
+                .text("Números de casos");
+
+            var movingCursor = false;
+
+            const cursor = lineSvg.append("g")
+                .attr("transform", `translate(${lineMargin.left}, 0)`);
+
+            const lineTooltip = d3.select("body").append("div")
+                .attr("class", "tooltip")
+                .html("Aqui");
+
+            const cursorLine = cursor.append("line")
+                .attr("x1", 0)
+                .attr("y1", lineMargin.top)
+                .attr("x2", 0)
+                .attr("y2", height - lineMargin.bottom)
+                .style("stroke", "dimgrey")
+                .style("stroke-width", "3px");
+
+            function updateCursorPosition() {
+                const cursorX = clamp(d3.mouse(lineSvg.node())[0], lineMargin.left, width - lineMargin.right);
+                cursor.attr("transform", `translate(${cursorX}, 0)`);
+                const index = bisectDate(accumulatedData, x.invert(cursorX), 1);
+
+                cursor.attr("transform", `translate(${cursorX}, 0)`);
+                if (date !== Object.keys(data)[index]) {
+                    date = Object.keys(data)[index];
+                    update(g);
+                }
+
+
+                lineTooltip
+                    .style("top", d3.event.pageY - 50 + "px")
+                    .style("left", d3.event.pageX + "px")
+                    .html(`${accumulatedData[index].date.toISOString().split("T")[0].split("-").reverse().slice(0, 2).join("/")}: ${accumulatedData[index].value} casos`);
+            }
+
+            lineSvg
+                .on("mousedown", () => {
+                    movingCursor = true;
+
+                    updateCursorPosition();
+                })
+                .on("mousemove", ((d, i) => {
+                    if (movingCursor) {
+                        updateCursorPosition();
+                    }
+                }))
+                .on("mouseup", () => {
+                    movingCursor = false;
+                });
+        });
+    </script>
+
+    <!-- Filtro de faixa etária -->
+    <script nonce="{{ request.csp_nonce }}">
+        $(document).ready(function () {
+            const ageMin = $("input[name='age__gte']");
+            const ageMax = $("input[name='age__lte']");
+            const ageSelect = $("#age-group-select");
+
+
+            if ("{{ params.age__gte }}" !== "" && "{{ params.age__lte }}" !== "") {
+                const min = parseInt("{{ params.age__gte }}");
+                const max = parseInt("{{ params.age__lte }}");
+
+                console.log(min, max);
+
+                if ((min >= 0) && (min <= 70) && (min % 10 === 0) && (max === min + 9)) { // Faixa etária existente no select
+                    ageSelect.val(min / 10);
+                } else { // Faixa etária customizada
+                    ageSelect.val("-1");
+                    ageMin.val(min);
+                    ageMin.attr("type", "number");
+                    $("label[for=" + ageMin.attr("id") + "]").show();
+                    ageMax.val(max);
+                    ageMax.attr("type", "number");
+                    $("label[for=" + ageMax.attr("id") + "]").show();
+                }
+
+            } else if (("{{ params.age__gte }}" !== "" && "{{ params.age__lte }}" === "") ||
+                ("{{ params.age__gte }}" === "" && "{{ params.age__lte }}" !== "")) {
+                ageMin.val("{{ params.age__gte }}");
+                ageMax.val("{{ params.age__lte }}");
+            }
+
+            ageSelect.on("change", function () {
+                const select = parseInt($(this).val());
+                if (!isNaN(select) && select !== -1) {
+                    $.each([ageMin, ageMax], function (i, age) {
+                        age.attr("type", "hidden");
+                        $("label[for=" + age.attr("id") + "]").hide();
+                    });
+                    ageMin.val(select * 10);
+                    ageMax.val((select < 8) ? (select * 10 + 9) : "");
+                } else {
+                    if (isNaN(select)) {
+                        $.each([ageMin, ageMax], function (i, age) {
+                            age.val("");
+                            age.attr("type", "hidden");
+                            $("label[for=" + age.attr("id") + "]").hide();
+                        });
+                    } else {
+                        $.each([ageMin, ageMax], function (i, age) {
+                            age.attr("type", "number");
+                            $("label[for=" + age.attr("id") + "]").show();
+                        });
+                    }
+                }
+            });
+        });
+    </script>
+
+    <!-- Visualizar somente o formulário desejado -->
+    <script nonce="{{ request.csp_nonce }}">
+        var dataSelection = document.getElementById("data-select");
+        dataSelection.addEventListener("change", function () {
+            if (dataSelection.value == "RESOURCES") {
+                document.getElementById("resource-form").className = "form-row mt-3";
+                document.getElementById("cases-form").className = "form-row mt-3 display-none";
+
+                updateVisualization(dataSelection.value);
+
+            } else {
+                document.getElementById("resource-form").className = "form-row mt-3 display-none";
+                document.getElementById("cases-form").className = "form-row mt-3";
+
+                updateVisualization(dataSelection.value);
+            }
+        });
+    </script>
+{% endblock %}

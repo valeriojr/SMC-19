@@ -1,0 +1,21 @@
+{% extends 'bootstrap_modal.html' %}
+
+{% load crispy_forms_filters %}
+
+{% block modal_id %}update-trip{% endblock %}
+
+{% block modal_header %}
+    <h4 class="modal-title">Editar endereço</h4>
+{% endblock %}
+
+{% block modal_body %}
+    <form id="update-trip-form" method="post" action="">{% csrf_token %}
+        {{ trip_form|crispy }}
+    </form>
+
+{% endblock %}
+
+{% block modal_footer %}
+    <button class="btn btn-light" data-dismiss="modal">Cancelar</button>
+    <input type="submit" form="update-trip-form" class="btn btn-primary" value="Editar">
+{% endblock %}

@@ -1,0 +1,34 @@
+{% extends 'base.html' %}
+
+{% load static %}
+{% load crispy_forms_filters %}
+
+{% block content %}
+    <form id="sign-up-form" method="post">
+        {% csrf_token %}
+        <div class="form-row">
+            <div class="form-group col mb-0">{{ form.first_name|as_crispy_field }}</div>
+        </div>
+        <div class="form-row">
+            <div class="form-group col mb-0">{{ form.last_name|as_crispy_field }}</div>
+        </div>
+        <div class="form-row">
+            <div class="form-group col mb-0">{{ form.cpf|as_crispy_field }}</div>
+        </div>
+        <div class="form-row">
+            <div class="form-group col mb-0">{{ form.user_profile|as_crispy_field }}</div>
+        </div>
+        <div class="form-row">
+            <div class="form-group col mb-0">{{ form.health_center|as_crispy_field }}</div>
+        </div>
+        <div class="form-row">
+            <div class="form-group col mb-0">{{ form.password|as_crispy_field }}</div>
+        </div>
+        <div class="form-row">
+            <div class="form-group col mb-0">{{ form.confirm_password|as_crispy_field }}</div>
+        </div>
+        <div class="form-row justify-content-end">
+            <div class="form-group"><input type="submit" class="btn btn-primary" value="Cadastrar"></div>
+        </div>
+    </form>
+{% endblock %}
